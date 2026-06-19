@@ -1,4 +1,13 @@
-import { chunks, type Chunk } from '../data/chunks.js';
+import { prisma } from "../lib/prisma.js";
+
+export type RetrievedChunk = {
+  chunkId: number;
+  documentId: number;
+  documentTitle: string;
+  text: string;
+  matchedKeywords: string[];
+  score: number;
+};
 
 export const retrieveChunks = async (question: string, limit: number = 3) => {
   // Normalize the question into searchable words.
@@ -6,11 +15,13 @@ export const retrieveChunks = async (question: string, limit: number = 3) => {
   // becomes ["how", "do", "i", "protect", "routes", "with", "jwt"]
   const questionKeywords = question.toLowerCase().split(/\W+/).filter(Boolean);
 
-  const matchingChunks: {
-    chunk: Chunk;
-    matchedKeywords: string[];
-    score: number;
-  }[] = [];
+  const matchingChunks: RetrievedChunk[] = [];
+
+  const chunks = await prisma.chunk.findMany({
+    include: {
+      document: true,
+    },
+  });
 
   // Check each stored chunk against the user's question.
   for (const chunk of chunks) {
@@ -30,7 +41,14 @@ export const retrieveChunks = async (question: string, limit: number = 3) => {
 
     // Only return chunks that matched at least one keyword.
     if (score > 0) {
-      matchingChunks.push({ chunk, matchedKeywords, score });
+      matchingChunks.push({
+        chunkId: chunk.id,
+        documentId: chunk.document.id,
+        documentTitle: chunk.document.title,
+        text: chunk.text,
+        matchedKeywords,
+        score,
+      });
     }
   }
 
