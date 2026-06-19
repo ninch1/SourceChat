@@ -1,23 +1,22 @@
-import { Request, Response } from "express";
+import { asyncWrapper } from "../utils/asyncWrapper.js";
+import ErrorResponse from "../middleware/errorResponse.js";
 
-export const createDocument = async (req: Request, res: Response) => {
+export const createDocument = asyncWrapper(async (req, res) => {
   const { title, text } = req.body ?? {};
 
   if (typeof title !== "string" || title.trim() === "") {
-    return res.status(400).json({ message: "Title is required" });
+    throw new ErrorResponse("Title is required", 400);
   }
 
   if (typeof text !== "string" || text.trim() === "") {
-    return res.status(400).json({ message: "Text is required" });
+    throw new ErrorResponse("Text is required", 400);
   }
 
-  console.log({ title, text });
-
-  return res.status(201).json({
+  res.status(201).json({
     message: "Document received successfully",
     document: {
       title: title.trim(),
       text: text.trim(),
     },
   });
-};
+});
