@@ -1,0 +1,31 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Document {
+  id        Int      @id @default(autoincrement())
+  title     String
+  createdAt DateTime @default(now())
+
+  chunks    Chunk[]
+}
+
+model Chunk {
+  id         Int      @id @default(autoincrement())
+  documentId Int
+  text       String
+  keywords   String[]
+  createdAt  DateTime @default(now())
+
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+}

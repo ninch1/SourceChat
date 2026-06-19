@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: sourcechat-postgres
+    restart: unless-stopped
+    ports:
+      - '5433:5432'
+    environment:
+      POSTGRES_USER: sourcechat_user
+      POSTGRES_PASSWORD: sourcechat_password
+      POSTGRES_DB: sourcechat_db
+    volumes:
+      - sourcechat_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  sourcechat_postgres_data:
