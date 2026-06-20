@@ -1,0 +1,5 @@
+Express routes connect HTTP requests to controller functions. Controllers should validate input, call services, and send JSON responses.
+
+Multer handles multipart form-data uploads in Express. With memory storage, the uploaded file is available as a Buffer on req.file.
+
+Prisma creates and queries PostgreSQL records using TypeScript. A document can have many chunks, and each chunk belongs to one document.
