@@ -53,7 +53,10 @@ export const retrieveChunks = async (question: string, limit: number = 3) => {
   }
 
   // Put the most relevant chunks first, then limit how many we return.
-  matchingChunks.sort((a, b) => b.score - a.score);
+  matchingChunks.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    return b.chunkId - a.chunkId;
+  });
 
   return matchingChunks.slice(0, limit);
 };
