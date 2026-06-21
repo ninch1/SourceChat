@@ -1,6 +1,6 @@
 import { askRag } from '../services/ragService.js';
 import { z } from 'zod';
-import { asyncWrapper } from '../utils/asyncWrapper.js';
+import { asyncWrapper } from '../middleware/asyncWrapper.js';
 
 const AskRagSchema = z.object({
   question: z

@@ -1,4 +1,4 @@
-import { asyncWrapper } from '../utils/asyncWrapper.js';
+import { asyncWrapper } from '../middleware/asyncWrapper.js';
 import ErrorResponse from '../errors/errorResponse.js';
 import { createDocumentFromText } from '../services/documentService.js';
 import { z } from 'zod';
@@ -73,6 +73,7 @@ export const getDocuments = asyncWrapper(async (req, res) => {
 });
 
 // GET /api/documents/:id - Get a document by id
+// will not return the embeddings
 export const getDocumentById = asyncWrapper(async (req, res) => {
   const { id } = DocumentIdSchema.parse(req.params);
 

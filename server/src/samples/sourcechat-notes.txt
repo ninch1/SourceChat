@@ -1,0 +1,9 @@
+Express is a backend framework for Node.js. It helps create routes, controllers, and JSON APIs.
+
+Prisma is an ORM that connects a TypeScript application to a PostgreSQL database. It can create documents, chunks, and relationships between tables.
+
+Embeddings are arrays of numbers that represent the meaning of text. In SourceChat, each document chunk gets an embedding so user questions can be compared against stored chunks.
+
+pgvector is a PostgreSQL extension for storing and searching vector embeddings. It allows semantic search by comparing a query embedding with chunk embeddings.
+
+Jina provides an embeddings API. The app sends chunk text to Jina and receives a 1024-dimensional vector.

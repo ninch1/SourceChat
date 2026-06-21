@@ -25,6 +25,7 @@ model Chunk {
   documentId Int
   text       String
   keywords   String[]
+  embedding  Unsupported("vector")?
   createdAt  DateTime @default(now())
 
   document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
