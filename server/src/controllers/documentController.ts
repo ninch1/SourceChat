@@ -2,6 +2,7 @@ import { asyncWrapper } from '../utils/asyncWrapper.js';
 import ErrorResponse from '../errors/errorResponse.js';
 import { createDocumentFromText } from '../services/documentService.js';
 import { z } from 'zod';
+import { prisma } from '../lib/prisma.js';
 
 const TitleSchema = z
   .string()
@@ -17,6 +18,11 @@ const TextSchema = z
 const CreateDocumentSchema = z.object({
   title: TitleSchema,
   text: TextSchema,
+});
+
+// Schema for document id
+const DocumentIdSchema = z.object({
+  id: z.coerce.number().int().positive(),
 });
 
 // POST /api/documents - Create a new document from JSON body
@@ -53,6 +59,56 @@ export const uploadDocumentFile = asyncWrapper(async (req, res) => {
 
   res.status(201).json({
     message: 'Document received successfully',
+    document,
+  });
+});
+
+// GET /api/documents - Get all documents
+export const getDocuments = asyncWrapper(async (req, res) => {
+  const documents = await prisma.document.findMany();
+  res.status(200).json({
+    message: 'Documents fetched successfully',
+    documents,
+  });
+});
+
+// GET /api/documents/:id - Get a document by id
+export const getDocumentById = asyncWrapper(async (req, res) => {
+  const { id } = DocumentIdSchema.parse(req.params);
+
+  const document = await prisma.document.findUnique({
+    where: { id },
+    include: { chunks: true },
+  });
+
+  if (!document) {
+    throw new ErrorResponse('Document not found', 404);
+  }
+
+  res.status(200).json({
+    message: 'Document fetched successfully',
+    document,
+  });
+});
+
+// DELETE /api/documents/:id - Delete a document by id
+export const deleteDocumentById = asyncWrapper(async (req, res) => {
+  const { id } = DocumentIdSchema.parse(req.params);
+
+  const document = await prisma.document.findUnique({
+    where: { id },
+  });
+
+  if (!document) {
+    throw new ErrorResponse('Document not found', 404);
+  }
+
+  await prisma.document.delete({
+    where: { id },
+  });
+
+  res.status(200).json({
+    message: 'Document deleted successfully',
     document,
   });
 });
