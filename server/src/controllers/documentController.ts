@@ -1,52 +1,58 @@
-import { asyncWrapper } from "../utils/asyncWrapper.js";
-import ErrorResponse from "../errors/errorResponse.js";
-import { createDocumentFromText } from "../services/documentService.js";
+import { asyncWrapper } from '../utils/asyncWrapper.js';
+import ErrorResponse from '../errors/errorResponse.js';
+import { createDocumentFromText } from '../services/documentService.js';
+import { z } from 'zod';
 
-export const createDocument = asyncWrapper(async (req, res) => {
-  const { title, text } = req.body;
+const TitleSchema = z
+  .string()
+  .trim()
+  .min(1, 'Title is required')
+  .max(100, 'Title must be less than 100 characters');
+const TextSchema = z
+  .string()
+  .trim()
+  .min(1, 'Text is required')
+  .max(10000, 'Text must be less than 10000 characters');
 
-  if (typeof title !== "string" || title.trim() === "") {
-    throw new ErrorResponse("Title is required", 400);
-  }
-
-  if (typeof text !== "string" || text.trim() === "") {
-    throw new ErrorResponse("Text is required", 400);
-  }
-
-  const document = await createDocumentFromText(title, text);
-  res.status(201).json({ message: "Document created successfully", document });
+const CreateDocumentSchema = z.object({
+  title: TitleSchema,
+  text: TextSchema,
 });
 
-export const uploadDocumentFile = asyncWrapper(async (req, res) => {
-  const file = req.file;
-  let title = req.body.title;
-
-  if (!file) {
-    throw new ErrorResponse("File is required", 400);
-  }
-
-  if (file.mimetype !== "text/plain") {
-    throw new ErrorResponse("Only .txt files are supported", 400);
-  }
-
-  const text = file.buffer.toString("utf-8");
-
-  if (!title) {
-    title = file.originalname.split(".")[0];
-  }
-
-  if (typeof title !== "string" || title.trim() === "") {
-    throw new ErrorResponse("Title is required", 400);
-  }
-
-  if (typeof text !== "string" || text.trim() === "") {
-    throw new ErrorResponse("Text is required", 400);
-  }
+// POST /api/documents - Create a new document from JSON body
+export const createDocument = asyncWrapper(async (req, res) => {
+  const { title, text } = CreateDocumentSchema.parse(req.body);
 
   const document = await createDocumentFromText(title, text);
+  res.status(201).json({ message: 'Document created successfully', document });
+});
+
+// POST /api/documents/upload - Create a new document from file upload
+export const uploadDocumentFile = asyncWrapper(async (req, res) => {
+  const file = req.file;
+  let title = req.body?.title;
+
+  if (!file) {
+    throw new ErrorResponse('File is required', 400);
+  }
+
+  if (file.mimetype !== 'text/plain') {
+    throw new ErrorResponse('Only .txt files are supported', 400);
+  }
+
+  const text = file.buffer.toString('utf-8');
+
+  if (!title) {
+    title = file.originalname.split('.')[0];
+  }
+
+  const validatedTitle = TitleSchema.parse(title);
+  const validatedText = TextSchema.parse(text);
+
+  const document = await createDocumentFromText(validatedTitle, validatedText);
 
   res.status(201).json({
-    message: "Document received successfully",
+    message: 'Document received successfully',
     document,
   });
 });

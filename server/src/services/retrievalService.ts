@@ -1,5 +1,6 @@
-import { prisma } from "../lib/prisma.js";
+import { prisma } from '../lib/prisma.js';
 
+// type for a chunk that has been retrieved from the database
 export type RetrievedChunk = {
   chunkId: number;
   documentId: number;
