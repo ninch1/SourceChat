@@ -1,4 +1,7 @@
 import { retrieveChunks } from './retrievalService.js';
+
+// Service to ask a question using RAG
+
 export const askRag = async (question: string) => {
   const retrievedChunks = await retrieveChunks(question, 3);
 
@@ -14,8 +17,7 @@ export const askRag = async (question: string) => {
     chunkId: chunk.chunkId,
     documentId: chunk.documentId,
     documentTitle: chunk.documentTitle,
-    score: chunk.score,
-    matchedKeywords: chunk.matchedKeywords,
+    distance: chunk.distance,
     text: chunk.text,
   }));
   return { answer, sources };
