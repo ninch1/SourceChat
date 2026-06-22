@@ -30,7 +30,11 @@ export const createDocument = asyncWrapper(async (req, res) => {
   const { title, text } = CreateDocumentSchema.parse(req.body);
 
   const document = await createDocumentFromText(title, text);
-  res.status(201).json({ message: 'Document created successfully', document });
+  res.status(201).json({
+    success: true,
+    message: 'Document created successfully',
+    data: { document },
+  });
 });
 
 // POST /api/documents/upload - Create a new document from file upload
@@ -58,8 +62,9 @@ export const uploadDocumentFile = asyncWrapper(async (req, res) => {
   const document = await createDocumentFromText(validatedTitle, validatedText);
 
   res.status(201).json({
-    message: 'Document received successfully',
-    document,
+    success: true,
+    message: 'Document uploaded successfully',
+    data: { document },
   });
 });
 
@@ -67,8 +72,9 @@ export const uploadDocumentFile = asyncWrapper(async (req, res) => {
 export const getDocuments = asyncWrapper(async (req, res) => {
   const documents = await prisma.document.findMany();
   res.status(200).json({
+    success: true,
     message: 'Documents fetched successfully',
-    documents,
+    data: { documents },
   });
 });
 
@@ -87,8 +93,9 @@ export const getDocumentById = asyncWrapper(async (req, res) => {
   }
 
   res.status(200).json({
+    success: true,
     message: 'Document fetched successfully',
-    document,
+    data: { document },
   });
 });
 
@@ -109,7 +116,8 @@ export const deleteDocumentById = asyncWrapper(async (req, res) => {
   });
 
   res.status(200).json({
+    success: true,
     message: 'Document deleted successfully',
-    document,
+    data: { document },
   });
 });

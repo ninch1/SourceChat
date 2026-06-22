@@ -15,5 +15,9 @@ export const askQuestion = asyncWrapper(async (req, res) => {
 
   const { answer, sources } = await askRag(question);
 
-  res.status(200).json({ question, answer, sources });
+  res.status(200).json({
+    success: true,
+    message: 'Question answered successfully',
+    data: { question, answer, sources },
+  });
 });
