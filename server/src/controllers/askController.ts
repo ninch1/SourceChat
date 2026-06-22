@@ -14,5 +14,6 @@ export const askQuestion = asyncWrapper(async (req, res) => {
   const { question } = AskRagSchema.parse(req.body);
 
   const { answer, sources } = await askRag(question);
+
   res.status(200).json({ question, answer, sources });
 });

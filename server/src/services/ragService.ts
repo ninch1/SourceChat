@@ -1,4 +1,5 @@
 import { retrieveChunks } from './retrievalService.js';
+import { generateAnswer } from './chatbotService.js';
 
 // Service to ask a question using RAG
 
@@ -12,13 +13,10 @@ export const askRag = async (question: string) => {
     };
   }
 
-  const answer = retrievedChunks.map((chunk) => chunk.text).join('\n\n');
-  const sources = retrievedChunks.map((chunk) => ({
-    chunkId: chunk.chunkId,
-    documentId: chunk.documentId,
-    documentTitle: chunk.documentTitle,
-    distance: chunk.distance,
-    text: chunk.text,
-  }));
-  return { answer, sources };
+  const generatedAnswer = await generateAnswer(question, retrievedChunks);
+
+  return {
+    answer: generatedAnswer.answer,
+    sources: generatedAnswer.answeredFromSources ? retrievedChunks : [],
+  };
 };
