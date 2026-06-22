@@ -1,81 +1,183 @@
+import { z } from 'zod';
+import ErrorResponse from '../errors/errorResponse.js';
+
 // Jina embedding service
 
-// TODO: Add provider-specific error handling for Jina API failures.
+const JINA_API_URL = 'https://api.jina.ai/v1/embeddings';
 
 const apiKey = process.env.JINA_API_KEY;
 const embeddingModel =
   process.env.JINA_EMBEDDING_MODEL || 'jina-embeddings-v5-text-small';
 
 if (!apiKey) {
-  throw new Error('JINA_API_KEY is not defined');
+  throw new ErrorResponse('JINA_API_KEY is not defined', 500);
 }
 
-// generate an embedding for a passage of text
-export const generateEmbeddingPassage = async (
-  text: string,
-): Promise<number[]> => {
-  const response = await fetch('https://api.jina.ai/v1/embeddings', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: embeddingModel,
-      task: 'retrieval.passage',
-      normalized: true,
-      dimensions: 1024,
-      input: [text],
-    }),
-  });
+// Validate successful Jina embedding responses.
+// We only care that Jina returns at least one embedding.
+const JinaEmbeddingResponseSchema = z.object({
+  data: z
+    .array(
+      z.object({
+        embedding: z.array(z.number()),
+      }),
+    )
+    .min(1),
+});
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(
-      `Jina embedding request failed: ${response.status} ${errorText}`,
-    );
+// Validate Jina error responses.
+// These fields are useful for logging, but should not be shown to users.
+const JinaErrorSchema = z.object({
+  detail: z.string().optional(),
+  code: z.string().optional(),
+  request_id: z.string().optional(),
+});
+
+type JinaErrorResponse = z.infer<typeof JinaErrorSchema>;
+
+type JinaEmbeddingTask = 'retrieval.passage' | 'retrieval.query';
+
+// Convert Jina HTTP errors into app-level errors.
+// The frontend should receive clean messages, not raw provider details.
+const getJinaErrorMessage = (
+  status: number,
+): { message: string; statusCode: number } => {
+  if (status === 400) {
+    return {
+      message: 'Invalid embedding request.',
+      statusCode: 400,
+    };
   }
 
-  const data = await response.json();
-
-  if (!data.data || !data.data[0] || !data.data[0].embedding) {
-    throw new Error('Failed to generate embedding');
+  if (status === 401 || status === 403) {
+    return {
+      message: 'Embedding service authentication failed.',
+      statusCode: 502,
+    };
   }
 
-  return data.data[0].embedding;
+  if (status === 429) {
+    return {
+      message: 'Embedding service rate limit reached. Please try again later.',
+      statusCode: 429,
+    };
+  }
+
+  return {
+    message: 'Embedding service failed. Please try again later.',
+    statusCode: 502,
+  };
 };
 
-// generate an embedding for a query of text
-export const generateEmbeddingQuery = async (
-  text: string,
-): Promise<number[]> => {
-  const response = await fetch('https://api.jina.ai/v1/embeddings', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: embeddingModel,
-      task: 'retrieval.query',
-      normalized: true,
-      dimensions: 1024,
-      input: [text],
-    }),
-  });
+// Try to read provider-specific error details for internal logs.
+// If Jina does not return JSON, we still handle the error by HTTP status.
+const parseJinaErrorBody = (errorText: string): JinaErrorResponse => {
+  try {
+    const parsedJson = JSON.parse(errorText);
+    const result = JinaErrorSchema.safeParse(parsedJson);
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(
-      `Jina embedding request failed: ${response.status} ${errorText}`,
+    if (result.success) {
+      return result.data;
+    }
+
+    console.error(
+      'Jina error response did not match expected shape:',
+      parsedJson,
+    );
+    console.error('Error details:', result.error.issues);
+
+    return {};
+  } catch (parseError) {
+    console.error('Failed to parse Jina error response:', parseError);
+    console.error('Raw error text:', errorText);
+
+    return {};
+  }
+};
+
+// Shared helper for both document chunk embeddings and user query embeddings.
+const generateEmbedding = async (
+  text: string,
+  task: JinaEmbeddingTask,
+): Promise<number[]> => {
+  try {
+    const response = await fetch(JINA_API_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: embeddingModel,
+        task,
+        normalized: true,
+        dimensions: 1024,
+        input: [text],
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      const errorBody = parseJinaErrorBody(errorText);
+
+      console.error('Jina embedding error:', {
+        status: response.status,
+        code: errorBody.code,
+        detail: errorBody.detail,
+        requestId: errorBody.request_id,
+      });
+
+      const { message, statusCode } = getJinaErrorMessage(response.status);
+
+      throw new ErrorResponse(message, statusCode);
+    }
+
+    const data = await response.json();
+    const result = JinaEmbeddingResponseSchema.safeParse(data);
+
+    if (!result.success) {
+      console.error(
+        'Jina embedding response did not match expected shape:',
+        data,
+      );
+      console.error('Error details:', result.error.issues);
+
+      throw new ErrorResponse(
+        'Embedding service returned an invalid response.',
+        502,
+      );
+    }
+
+    const embedding = result.data.data[0]?.embedding;
+
+    if (!embedding) {
+      throw new ErrorResponse(
+        'Embedding service returned an invalid response.',
+        502,
+      );
+    }
+
+    return embedding;
+  } catch (error) {
+    if (error instanceof ErrorResponse) {
+      throw error;
+    }
+
+    console.error('Unexpected Jina embedding error:', error);
+
+    throw new ErrorResponse(
+      'Embedding service failed. Please try again later.',
+      502,
     );
   }
+};
 
-  const data = await response.json();
+// Used when embedding stored document chunks.
+export const generateEmbeddingPassage = (text: string): Promise<number[]> => {
+  return generateEmbedding(text, 'retrieval.passage');
+};
 
-  if (!data.data || !data.data[0] || !data.data[0].embedding) {
-    throw new Error('Failed to generate embedding');
-  }
-
-  return data.data[0].embedding;
+// Used when embedding user questions.
+export const generateEmbeddingQuery = (text: string): Promise<number[]> => {
+  return generateEmbedding(text, 'retrieval.query');
 };

@@ -5,8 +5,6 @@ import { extractKeywords } from '../utils/keywordUtils.js';
 import { generateEmbeddingPassage } from './embeddingService.js';
 import ErrorResponse from '../errors/errorResponse.js';
 
-// TODO: add specific error handling
-
 type DocumentWithChunks = Prisma.DocumentGetPayload<{
   include: {
     chunks: true;
@@ -63,6 +61,12 @@ export const createDocumentFromText = async (title: string, text: string) => {
     await prisma.document.delete({
       where: { id: document.id },
     });
+
+    if (error instanceof ErrorResponse) {
+      throw error;
+    }
+
+    console.error('Failed to create document embeddings:', error);
 
     throw new ErrorResponse('Failed to create document embeddings', 500);
   }
