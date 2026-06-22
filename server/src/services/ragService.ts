@@ -1,9 +1,20 @@
 import { retrieveChunks } from './retrievalService.js';
 import { generateAnswer } from './chatbotService.js';
+import { hasChunks } from './chunkService.js';
 
 // Service to ask a question using RAG
 
 export const askRag = async (question: string) => {
+  // check if there are any uploaded chunks
+  const hasUploadedChunks = await hasChunks();
+  if (!hasUploadedChunks) {
+    return {
+      answer: 'No documents have been uploaded yet.',
+      sources: [],
+    };
+  }
+
+  // retrieve the chunks using cosine similarity
   const retrievedChunks = await retrieveChunks(question, 3);
 
   if (retrievedChunks.length === 0) {
@@ -13,6 +24,7 @@ export const askRag = async (question: string) => {
     };
   }
 
+  // generate the answer
   const generatedAnswer = await generateAnswer(question, retrievedChunks);
 
   return {

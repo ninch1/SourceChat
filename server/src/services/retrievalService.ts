@@ -4,6 +4,9 @@ import ErrorResponse from '../errors/errorResponse.js';
 
 // Service to retrieve chunks using cosine similarity
 
+// maximum distance for a chunk to be considered relevant
+const MAX_DISTANCE = 0.75;
+
 // type for a chunk that has been retrieved from the database using cosine similarity
 export type RetrievedChunk = {
   chunkId: number;
@@ -22,6 +25,7 @@ export const retrieveChunks = async (
   question: string,
   limit: number = 3,
 ): Promise<RetrievedChunk[]> => {
+  // generate the embedding for the question
   const questionEmbedding = await generateEmbeddingQuery(question);
   const questionVector = vectorToSql(questionEmbedding);
 
@@ -41,7 +45,8 @@ export const retrieveChunks = async (
   LIMIT ${limit}
 `;
 
-    return results;
+    // filter out chunks that are too far away
+    return results.filter((chunk) => chunk.distance <= MAX_DISTANCE);
   } catch (error) {
     console.error('Vector retrieval failed:', error);
     throw new ErrorResponse('Failed to retrieve relevant chunks', 500);
