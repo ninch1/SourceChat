@@ -29,7 +29,9 @@ const DocumentIdSchema = z.object({
 export const createDocument = asyncWrapper(async (req, res) => {
   const { title, text } = CreateDocumentSchema.parse(req.body);
 
-  const document = await createDocumentFromText(title, text);
+  const tempUserId = '1';
+
+  const document = await createDocumentFromText(title, text, tempUserId);
   res.status(201).json({
     success: true,
     message: 'Document created successfully',
@@ -59,7 +61,13 @@ export const uploadDocumentFile = asyncWrapper(async (req, res) => {
   const validatedTitle = TitleSchema.parse(title);
   const validatedText = TextSchema.parse(text);
 
-  const document = await createDocumentFromText(validatedTitle, validatedText);
+  const tempUserId = '1';
+
+  const document = await createDocumentFromText(
+    validatedTitle,
+    validatedText,
+    tempUserId,
+  );
 
   res.status(201).json({
     success: true,

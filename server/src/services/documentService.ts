@@ -12,7 +12,11 @@ type DocumentWithChunks = Prisma.DocumentGetPayload<{
 }>;
 
 // create a document from text with chunks and embeddings
-export const createDocumentFromText = async (title: string, text: string) => {
+export const createDocumentFromText = async (
+  title: string,
+  text: string,
+  userId: string,
+) => {
   const chunks = splitTextIntoChunks(text);
 
   // create initial document without embeddings
@@ -21,6 +25,7 @@ export const createDocumentFromText = async (title: string, text: string) => {
     document = await prisma.document.create({
       data: {
         title: title.trim(),
+        userId: userId,
         chunks: {
           create: chunks.map((chunk) => ({
             text: chunk.trim(),

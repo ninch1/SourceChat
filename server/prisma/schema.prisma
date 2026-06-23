@@ -12,21 +12,38 @@ datasource db {
   provider = "postgresql"
 }
 
+model User {
+  id           String     @id @default(uuid())
+  email        String     @unique
+  username     String     @unique
+  passwordHash String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  documents    Document[]
+}
+
 model Document {
   id        Int      @id @default(autoincrement())
   title     String
   createdAt DateTime @default(now())
 
-  chunks    Chunk[]
+  chunks Chunk[]
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  @@index([userId])
 }
 
 model Chunk {
-  id         Int      @id @default(autoincrement())
+  id         Int                    @id @default(autoincrement())
   documentId Int
   text       String
   keywords   String[]
   embedding  Unsupported("vector")?
-  createdAt  DateTime @default(now())
+  createdAt  DateTime               @default(now())
 
-  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
 }
