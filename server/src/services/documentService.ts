@@ -25,7 +25,7 @@ export const createDocumentFromText = async (
     document = await prisma.document.create({
       data: {
         title: title.trim(),
-        userId: userId,
+        userId,
         chunks: {
           create: chunks.map((chunk) => ({
             text: chunk.trim(),
@@ -75,6 +75,5 @@ export const createDocumentFromText = async (
 
     throw new ErrorResponse('Failed to create document embeddings', 500);
   }
-
   return document;
 };

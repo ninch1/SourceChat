@@ -105,7 +105,7 @@ export const loginUser = asyncWrapper(async (req, res) => {
   }
 
   const payload = {
-    userId: user.id,
+    id: user.id,
     email: user.email,
     username: user.username,
   };
