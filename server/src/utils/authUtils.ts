@@ -15,6 +15,13 @@ type TokenPayload = {
   id: string;
 };
 
+export const refreshTokenCookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'strict' as const,
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+};
+
 // Get the authenticated user from the request
 export const getAuthUser = (req: Request) => {
   if (!req.user) {

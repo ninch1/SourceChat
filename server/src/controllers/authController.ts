@@ -9,6 +9,7 @@ import {
   hashRefreshToken,
   verifyRefreshToken,
 } from '../utils/authUtils.js';
+import { refreshTokenCookieOptions } from '../utils/authUtils.js';
 
 const registerUserSchema = z.object({
   email: z.email('Please enter a valid email address'),
@@ -30,10 +31,6 @@ const registerUserSchema = z.object({
 const loginUserSchema = z.object({
   email: z.email('Please enter a valid email address'),
   password: z.string().min(1, 'Please enter your password'),
-});
-
-const refreshAccessTokenSchema = z.object({
-  refreshToken: z.string().min(1, 'Please enter your refresh token'),
 });
 
 export const registerUser = asyncWrapper(async (req, res) => {
@@ -126,20 +123,25 @@ export const loginUser = asyncWrapper(async (req, res) => {
     },
   });
 
+  res.cookie('refreshToken', refreshToken, refreshTokenCookieOptions);
+
   res.status(200).json({
     success: true,
     message: 'User logged in successfully',
     data: {
       user: { id: user.id, email: user.email, username: user.username },
       accessToken,
-      refreshToken,
     },
   });
 });
 
 // This endpoint is used to refresh the access token
 export const refreshAccessToken = asyncWrapper(async (req, res) => {
-  const { refreshToken } = refreshAccessTokenSchema.parse(req.body);
+  const refreshToken = req.cookies?.refreshToken;
+
+  if (!refreshToken) {
+    throw new ErrorResponse('Refresh token is required', 401);
+  }
 
   const refreshTokenHash = hashRefreshToken(refreshToken);
 
@@ -147,12 +149,15 @@ export const refreshAccessToken = asyncWrapper(async (req, res) => {
     where: { tokenHash: refreshTokenHash },
   });
 
+  // If the refresh token is not found, we need to verify it
+  // This is to prevent token reuse
   if (!refreshTokenRecord) {
     let decoded;
 
     try {
       decoded = verifyRefreshToken(refreshToken);
     } catch {
+      res.clearCookie('refreshToken', refreshTokenCookieOptions);
       throw new ErrorResponse('Invalid refresh token', 401);
     }
 
@@ -162,13 +167,18 @@ export const refreshAccessToken = asyncWrapper(async (req, res) => {
       },
     });
 
+    res.clearCookie('refreshToken', refreshTokenCookieOptions);
+
     throw new ErrorResponse('Refresh token reuse detected', 403);
   }
 
+  // If the refresh token has expired
   if (refreshTokenRecord.expiresAt < new Date()) {
     await prisma.refreshToken.delete({
       where: { id: refreshTokenRecord.id },
     });
+
+    res.clearCookie('refreshToken', refreshTokenCookieOptions);
 
     throw new ErrorResponse('Refresh token expired', 401);
   }
@@ -199,12 +209,36 @@ export const refreshAccessToken = asyncWrapper(async (req, res) => {
     }),
   ]);
 
+  res.cookie('refreshToken', newRefreshToken, refreshTokenCookieOptions);
+
   res.status(200).json({
     success: true,
     message: 'Refresh token rotated successfully',
     data: {
       accessToken,
-      refreshToken: newRefreshToken,
     },
+  });
+});
+
+// This endpoint is used to logout the user
+// It deletes the refresh token from the database and clears the refresh token cookie
+export const logoutUser = asyncWrapper(async (req, res) => {
+  const refreshToken = req.cookies?.refreshToken;
+
+  if (!refreshToken) {
+    throw new ErrorResponse('Refresh token is required', 401);
+  }
+
+  const refreshTokenHash = hashRefreshToken(refreshToken);
+
+  await prisma.refreshToken.deleteMany({
+    where: { tokenHash: refreshTokenHash },
+  });
+
+  res.clearCookie('refreshToken', refreshTokenCookieOptions);
+
+  res.status(200).json({
+    success: true,
+    message: 'User logged out successfully',
   });
 });
