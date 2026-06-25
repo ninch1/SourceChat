@@ -1,6 +1,7 @@
 import { askRag } from '../services/ragService.js';
 import { z } from 'zod';
 import { asyncWrapper } from '../middleware/asyncWrapper.js';
+import { getAuthUser } from '../utils/authUtils.js';
 
 const AskRagSchema = z.object({
   question: z
@@ -11,9 +12,10 @@ const AskRagSchema = z.object({
 });
 
 export const askQuestion = asyncWrapper(async (req, res) => {
+  const user = getAuthUser(req);
   const { question } = AskRagSchema.parse(req.body);
 
-  const { answer, sources } = await askRag(question);
+  const { answer, sources } = await askRag(question, user.id);
 
   res.status(200).json({
     success: true,

@@ -23,6 +23,7 @@ const vectorToSql = (embedding: number[]) => {
 // retrieve chunks using cosine similarity
 export const retrieveChunks = async (
   question: string,
+  userId: string,
   limit: number = 3,
 ): Promise<RetrievedChunk[]> => {
   // generate the embedding for the question
@@ -40,7 +41,7 @@ export const retrieveChunks = async (
   FROM "Chunk"
   JOIN "Document"
     ON "Document"."id" = "Chunk"."documentId"
-  WHERE "Chunk"."embedding" IS NOT NULL
+  WHERE "Chunk"."embedding" IS NOT NULL AND "Document"."userId" = ${userId}
   ORDER BY "Chunk"."embedding" <=> ${questionVector}::vector
   LIMIT ${limit}
 `;

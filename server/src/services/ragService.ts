@@ -4,9 +4,9 @@ import { hasChunks } from './chunkService.js';
 
 // Service to ask a question using RAG
 
-export const askRag = async (question: string) => {
+export const askRag = async (question: string, userId: string) => {
   // check if there are any uploaded chunks
-  const hasUploadedChunks = await hasChunks();
+  const hasUploadedChunks = await hasChunks(userId);
   if (!hasUploadedChunks) {
     return {
       answer: 'No documents have been uploaded yet.',
@@ -15,7 +15,7 @@ export const askRag = async (question: string) => {
   }
 
   // retrieve the chunks using cosine similarity
-  const retrievedChunks = await retrieveChunks(question, 3);
+  const retrievedChunks = await retrieveChunks(question, userId, 3);
 
   if (retrievedChunks.length === 0) {
     return {
