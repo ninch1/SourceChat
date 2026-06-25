@@ -7,9 +7,11 @@ import ErrorResponse from '../errors/errorResponse.js';
 // if the user is authenticated, the middleware will pass up the request to the next middleware on req.user
 // req.user contains the user object id, email, username
 
-const jwtSecret = process.env.JWT_SECRET;
-if (!jwtSecret) {
-  console.error('JWT secret is not set');
+const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
+const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
+
+if (!accessTokenSecret || !refreshTokenSecret) {
+  console.error('Access token secret or refresh token secret is not set');
   throw new ErrorResponse('Internal server error', 500);
 }
 
@@ -30,7 +32,14 @@ const authMiddleware = asyncWrapper(async (req, res, next) => {
   if (!token) {
     throw new ErrorResponse('Unauthorized', 401);
   }
-  const decoded = jwt.verify(token, jwtSecret) as JwtPayload;
+
+  let decoded: JwtPayload;
+
+  try {
+    decoded = jwt.verify(token, accessTokenSecret) as JwtPayload;
+  } catch {
+    throw new ErrorResponse('Unauthorized', 401);
+  }
 
   req.user = {
     id: decoded.id,

@@ -3,14 +3,11 @@ import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import ErrorResponse from '../errors/errorResponse.js';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.JWT_SECRET;
-
-if (!JWT_SECRET) {
-  console.error('JWT secret is not set');
-  throw new ErrorResponse('Internal server error', 500);
-}
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  hashRefreshToken,
+} from '../utils/authUtils.js';
 
 const registerUserSchema = z.object({
   email: z.email('Please enter a valid email address'),
@@ -106,12 +103,22 @@ export const loginUser = asyncWrapper(async (req, res) => {
 
   const payload = {
     id: user.id,
-    email: user.email,
-    username: user.username,
   };
 
-  const token = jwt.sign(payload, JWT_SECRET, {
-    expiresIn: '1h',
+  const accessToken = generateAccessToken(payload);
+  const refreshToken = generateRefreshToken(payload);
+
+  const refreshTokenHash = hashRefreshToken(refreshToken);
+
+  const refreshTokenExpiresAt = new Date();
+  refreshTokenExpiresAt.setDate(refreshTokenExpiresAt.getDate() + 7);
+
+  await prisma.refreshToken.create({
+    data: {
+      tokenHash: refreshTokenHash,
+      userId: user.id,
+      expiresAt: refreshTokenExpiresAt,
+    },
   });
 
   res.status(200).json({
@@ -119,7 +126,8 @@ export const loginUser = asyncWrapper(async (req, res) => {
     message: 'User logged in successfully',
     data: {
       user: { id: user.id, email: user.email, username: user.username },
-      token,
+      accessToken,
+      refreshToken,
     },
   });
 });
