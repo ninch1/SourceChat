@@ -31,6 +31,10 @@ const loginUserSchema = z.object({
   password: z.string().min(1, 'Please enter your password'),
 });
 
+const refreshAccessTokenSchema = z.object({
+  refreshToken: z.string().min(1, 'Please enter your refresh token'),
+});
+
 export const registerUser = asyncWrapper(async (req, res) => {
   const { email, username, password } = registerUserSchema.parse(req.body);
 
@@ -128,6 +132,64 @@ export const loginUser = asyncWrapper(async (req, res) => {
       user: { id: user.id, email: user.email, username: user.username },
       accessToken,
       refreshToken,
+    },
+  });
+});
+
+// This endpoint is used to refresh the access token
+export const refreshAccessToken = asyncWrapper(async (req, res) => {
+  const { refreshToken } = refreshAccessTokenSchema.parse(req.body);
+
+  const refreshTokenHash = hashRefreshToken(refreshToken);
+
+  const refreshTokenRecord = await prisma.refreshToken.findUnique({
+    where: { tokenHash: refreshTokenHash },
+  });
+
+  if (!refreshTokenRecord) {
+    throw new ErrorResponse('Invalid refresh token', 401);
+  }
+
+  if (refreshTokenRecord.expiresAt < new Date()) {
+    await prisma.refreshToken.delete({
+      where: { id: refreshTokenRecord.id },
+    });
+
+    throw new ErrorResponse('Refresh token expired', 401);
+  }
+
+  const payload = {
+    id: refreshTokenRecord.userId,
+  };
+
+  const accessToken = generateAccessToken(payload);
+  const newRefreshToken = generateRefreshToken(payload);
+
+  const newRefreshTokenHash = hashRefreshToken(newRefreshToken);
+
+  const newRefreshTokenExpiresAt = new Date();
+  newRefreshTokenExpiresAt.setDate(newRefreshTokenExpiresAt.getDate() + 7);
+
+  // Transaction ensures that both operations are completed or none are completed
+  await prisma.$transaction([
+    prisma.refreshToken.delete({
+      where: { id: refreshTokenRecord.id },
+    }),
+    prisma.refreshToken.create({
+      data: {
+        tokenHash: newRefreshTokenHash,
+        userId: refreshTokenRecord.userId,
+        expiresAt: newRefreshTokenExpiresAt,
+      },
+    }),
+  ]);
+
+  res.status(200).json({
+    success: true,
+    message: 'Refresh token rotated successfully',
+    data: {
+      accessToken,
+      refreshToken: newRefreshToken,
     },
   });
 });
