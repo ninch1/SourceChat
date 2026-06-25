@@ -230,15 +230,13 @@ export const refreshAccessToken = asyncWrapper(async (req, res) => {
 export const logoutUser = asyncWrapper(async (req, res) => {
   const refreshToken = req.cookies?.refreshToken;
 
-  if (!refreshToken) {
-    throw new ErrorResponse('Refresh token is required', 401);
+  if (refreshToken) {
+    const refreshTokenHash = hashRefreshToken(refreshToken);
+
+    await prisma.refreshToken.deleteMany({
+      where: { tokenHash: refreshTokenHash },
+    });
   }
-
-  const refreshTokenHash = hashRefreshToken(refreshToken);
-
-  await prisma.refreshToken.deleteMany({
-    where: { tokenHash: refreshTokenHash },
-  });
 
   res.clearCookie('refreshToken', refreshTokenCookieOptions);
 

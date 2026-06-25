@@ -31,14 +31,16 @@ export const getAuthUser = (req: Request) => {
   return req.user;
 };
 
-export const generateAccessToken = (payload: any) => {
+export const generateAccessToken = (payload: TokenPayload) => {
   return jwt.sign(payload, ACCESS_TOKEN_SECRET, {
     expiresIn: '15m',
   });
 };
 
-export const generateRefreshToken = (payload: any) => {
-  return jwt.sign(payload, REFRESH_TOKEN_SECRET);
+export const generateRefreshToken = (payload: TokenPayload) => {
+  return jwt.sign(payload, REFRESH_TOKEN_SECRET, {
+    expiresIn: '7d',
+  });
 };
 
 export const hashRefreshToken = (token: string): string => {

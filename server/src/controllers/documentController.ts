@@ -30,8 +30,8 @@ const DocumentIdSchema = z.object({
 });
 
 const PaginationSchema = z.object({
-  page: z.coerce.number().int().positive(),
-  limit: z.coerce.number().int().positive(),
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(10),
 });
 
 type DocumentWithChunks = Prisma.DocumentGetPayload<{
@@ -126,9 +126,9 @@ export const uploadDocumentFile = asyncWrapper(async (req, res) => {
 // GET /api/documents - Get all documents
 export const getDocuments = asyncWrapper(async (req, res) => {
   const user = getAuthUser(req);
-  const { page = 1, limit = 10 } = PaginationSchema.parse({
-    page: req.query.page ? Number(req.query.page) : 1,
-    limit: req.query.limit ? Number(req.query.limit) : 10,
+  const { page, limit } = PaginationSchema.parse({
+    page: req.query.page,
+    limit: req.query.limit,
   });
 
   const skip = (page - 1) * limit;
@@ -213,6 +213,24 @@ export const deleteDocumentById = asyncWrapper(async (req, res) => {
     success: true,
     message: 'Document deleted successfully',
     data: { document: safeDocumentData },
+  });
+});
+
+export const deleteAllDocuments = asyncWrapper(async (req, res) => {
+  const user = getAuthUser(req);
+
+  const result = await prisma.document.deleteMany({
+    where: {
+      userId: user.id,
+    },
+  });
+
+  res.status(200).json({
+    success: true,
+    message: 'All documents deleted successfully',
+    data: {
+      deletedCount: result.count,
+    },
   });
 });
 
