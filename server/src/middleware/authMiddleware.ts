@@ -17,8 +17,6 @@ if (!accessTokenSecret || !refreshTokenSecret) {
 
 type JwtPayload = {
   id: string;
-  email: string;
-  username: string;
 };
 
 const authMiddleware = asyncWrapper(async (req, res, next) => {
@@ -43,8 +41,6 @@ const authMiddleware = asyncWrapper(async (req, res, next) => {
 
   req.user = {
     id: decoded.id,
-    email: decoded.email,
-    username: decoded.username,
   };
 
   next();

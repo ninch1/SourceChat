@@ -9,7 +9,7 @@ import {
   hashRefreshToken,
   verifyRefreshToken,
 } from '../utils/authUtils.js';
-import { refreshTokenCookieOptions } from '../utils/authUtils.js';
+import { refreshTokenCookieOptions, getAuthUser } from '../utils/authUtils.js';
 
 const registerUserSchema = z.object({
   email: z.email('Please enter a valid email address'),
@@ -240,5 +240,29 @@ export const logoutUser = asyncWrapper(async (req, res) => {
   res.status(200).json({
     success: true,
     message: 'User logged out successfully',
+  });
+});
+
+export const getCurrentUser = asyncWrapper(async (req, res) => {
+  const authUser = getAuthUser(req);
+
+  const user = await prisma.user.findUnique({
+    where: { id: authUser.id },
+    select: {
+      id: true,
+      email: true,
+      username: true,
+      createdAt: true,
+    },
+  });
+
+  if (!user) {
+    throw new ErrorResponse('User not found', 404);
+  }
+
+  res.status(200).json({
+    success: true,
+    message: 'User fetched successfully',
+    data: { user },
   });
 });
