@@ -6,6 +6,8 @@ import { prisma } from '../lib/prisma.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import { getAuthUser } from '../utils/authUtils.js';
 
+// - Schemas for the document data -
+
 const TitleSchema = z
   .string()
   .trim()
@@ -27,14 +29,25 @@ const DocumentIdSchema = z.object({
   id: z.coerce.number().int().positive(),
 });
 
+const PaginationSchema = z.object({
+  page: z.coerce.number().int().positive(),
+  limit: z.coerce.number().int().positive(),
+});
+
 type DocumentWithChunks = Prisma.DocumentGetPayload<{
   include: {
     chunks: true;
   };
 }>;
 
+const UpdateDocumentSchema = z.object({
+  title: TitleSchema,
+});
+
 type DocumentWithoutChunks = Prisma.DocumentGetPayload<{}>;
 
+// Used to sanitize the document data for the response
+// It does not include the chunks
 const safeDocument = (document: DocumentWithoutChunks) => {
   return {
     id: document.id,
@@ -43,6 +56,8 @@ const safeDocument = (document: DocumentWithoutChunks) => {
   };
 };
 
+// Used to sanitize the document data for the response
+// It includes the chunks
 const safeDocumentWithChunks = (document: DocumentWithChunks) => {
   return {
     ...safeDocument(document),
@@ -54,6 +69,8 @@ const safeDocumentWithChunks = (document: DocumentWithChunks) => {
     })),
   };
 };
+
+// - Document Controllers -
 
 // POST /api/documents - Create a new document from JSON body
 export const createDocument = asyncWrapper(async (req, res) => {
@@ -109,17 +126,45 @@ export const uploadDocumentFile = asyncWrapper(async (req, res) => {
 // GET /api/documents - Get all documents
 export const getDocuments = asyncWrapper(async (req, res) => {
   const user = getAuthUser(req);
-  const documents = await prisma.document.findMany({
-    where: {
-      userId: user.id,
-    },
+  const { page = 1, limit = 10 } = PaginationSchema.parse({
+    page: req.query.page ? Number(req.query.page) : 1,
+    limit: req.query.limit ? Number(req.query.limit) : 10,
   });
+
+  const skip = (page - 1) * limit;
+  const [documents, totalDocuments] = await Promise.all([
+    prisma.document.findMany({
+      skip,
+      take: limit,
+      where: {
+        userId: user.id,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    }),
+    prisma.document.count({
+      where: {
+        userId: user.id,
+      },
+    }),
+  ]);
+
+  const totalPages = Math.ceil(totalDocuments / limit);
 
   const safeDocumentsData = documents.map((document) => safeDocument(document));
   res.status(200).json({
     success: true,
     message: 'Documents fetched successfully',
-    data: { documents: safeDocumentsData },
+    data: {
+      documents: safeDocumentsData,
+      pagination: {
+        page,
+        limit,
+        totalDocuments,
+        totalPages,
+      },
+    },
   });
 });
 
@@ -167,6 +212,33 @@ export const deleteDocumentById = asyncWrapper(async (req, res) => {
   res.status(200).json({
     success: true,
     message: 'Document deleted successfully',
+    data: { document: safeDocumentData },
+  });
+});
+
+// PATCH /api/documents/:id - Update a document by id
+export const updateDocumentById = asyncWrapper(async (req, res) => {
+  const user = getAuthUser(req);
+  const { id } = DocumentIdSchema.parse(req.params);
+  const { title } = UpdateDocumentSchema.parse(req.body);
+
+  const document = await prisma.document.findFirst({
+    where: { id, userId: user.id },
+  });
+
+  if (!document) {
+    throw new ErrorResponse('Document not found', 404);
+  }
+
+  const updatedDocument = await prisma.document.update({
+    where: { id: document.id },
+    data: { title },
+  });
+
+  const safeDocumentData = safeDocument(updatedDocument);
+  res.status(200).json({
+    success: true,
+    message: 'Document updated successfully',
     data: { document: safeDocumentData },
   });
 });

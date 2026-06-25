@@ -10,6 +10,7 @@ import {
   verifyRefreshToken,
 } from '../utils/authUtils.js';
 import { refreshTokenCookieOptions, getAuthUser } from '../utils/authUtils.js';
+import { deleteExpiredRefreshTokens } from '../services/refreshTokenService.js';
 
 const registerUserSchema = z.object({
   email: z.email('Please enter a valid email address'),
@@ -79,6 +80,8 @@ export const registerUser = asyncWrapper(async (req, res) => {
 });
 
 export const loginUser = asyncWrapper(async (req, res) => {
+  await deleteExpiredRefreshTokens();
+
   const { email, password } = loginUserSchema.parse(req.body);
 
   const normalizedEmail = email.trim().toLowerCase();
@@ -137,6 +140,8 @@ export const loginUser = asyncWrapper(async (req, res) => {
 
 // This endpoint is used to refresh the access token
 export const refreshAccessToken = asyncWrapper(async (req, res) => {
+  await deleteExpiredRefreshTokens();
+
   const refreshToken = req.cookies?.refreshToken;
 
   if (!refreshToken) {

@@ -1,8 +1,19 @@
 import { retrieveChunks } from './retrievalService.js';
+import type { RetrievedChunk } from './retrievalService.js';
 import { generateAnswer } from './chatbotService.js';
 import { hasChunks } from './chunkService.js';
 
 // Service to ask a question using RAG
+
+const formatSources = (sources: RetrievedChunk[]) => {
+  return sources.map((source) => ({
+    chunkId: source.chunkId,
+    documentId: source.documentId,
+    documentTitle: source.documentTitle,
+    text: source.text,
+    relevanceScore: Number((1 - source.distance).toFixed(3)),
+  }));
+};
 
 export const askRag = async (question: string, userId: string) => {
   // check if there are any uploaded chunks
@@ -29,6 +40,8 @@ export const askRag = async (question: string, userId: string) => {
 
   return {
     answer: generatedAnswer.answer,
-    sources: generatedAnswer.answeredFromSources ? retrievedChunks : [],
+    sources: generatedAnswer.answeredFromSources
+      ? formatSources(retrievedChunks)
+      : [],
   };
 };

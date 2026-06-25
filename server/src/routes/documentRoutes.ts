@@ -5,6 +5,7 @@ import {
   getDocuments,
   getDocumentById,
   deleteDocumentById,
+  updateDocumentById,
 } from '../controllers/documentController.js';
 import multer from 'multer';
 import authMiddleware from '../middleware/authMiddleware.js';
@@ -28,5 +29,7 @@ router.get('/', authMiddleware, getDocuments);
 router.get('/:id', authMiddleware, getDocumentById);
 
 router.delete('/:id', authMiddleware, deleteDocumentById);
+
+router.patch('/:id', authMiddleware, updateDocumentById);
 
 export default router;
