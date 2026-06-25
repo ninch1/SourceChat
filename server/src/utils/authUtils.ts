@@ -11,6 +11,10 @@ if (!ACCESS_TOKEN_SECRET || !REFRESH_TOKEN_SECRET) {
   throw new ErrorResponse('Internal server error', 500);
 }
 
+type TokenPayload = {
+  id: string;
+};
+
 // Get the authenticated user from the request
 export const getAuthUser = (req: Request) => {
   if (!req.user) {
@@ -32,4 +36,12 @@ export const generateRefreshToken = (payload: any) => {
 
 export const hashRefreshToken = (token: string): string => {
   return crypto.createHash('sha256').update(token).digest('hex');
+};
+
+export const verifyAccessToken = (token: string): TokenPayload => {
+  return jwt.verify(token, ACCESS_TOKEN_SECRET) as TokenPayload;
+};
+
+export const verifyRefreshToken = (token: string): TokenPayload => {
+  return jwt.verify(token, REFRESH_TOKEN_SECRET) as TokenPayload;
 };

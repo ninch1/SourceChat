@@ -7,6 +7,7 @@ import {
   generateAccessToken,
   generateRefreshToken,
   hashRefreshToken,
+  verifyRefreshToken,
 } from '../utils/authUtils.js';
 
 const registerUserSchema = z.object({
@@ -147,7 +148,21 @@ export const refreshAccessToken = asyncWrapper(async (req, res) => {
   });
 
   if (!refreshTokenRecord) {
-    throw new ErrorResponse('Invalid refresh token', 401);
+    let decoded;
+
+    try {
+      decoded = verifyRefreshToken(refreshToken);
+    } catch {
+      throw new ErrorResponse('Invalid refresh token', 401);
+    }
+
+    await prisma.refreshToken.deleteMany({
+      where: {
+        userId: decoded.id,
+      },
+    });
+
+    throw new ErrorResponse('Refresh token reuse detected', 403);
   }
 
   if (refreshTokenRecord.expiresAt < new Date()) {
