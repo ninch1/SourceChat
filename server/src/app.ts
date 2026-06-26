@@ -1,4 +1,5 @@
 import express from 'express';
+import helmet from 'helmet';
 import cors from 'cors';
 import healthRoutes from './routes/healthRoutes.js';
 import askRoutes from './routes/askRoutes.js';
@@ -10,6 +11,12 @@ import ErrorResponse from './errors/errorResponse.js';
 import { generalRateLimiter } from './middleware/rateLimitMiddleware.js';
 
 const app = express();
+
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
+app.use(helmet());
 
 app.use(
   cors({

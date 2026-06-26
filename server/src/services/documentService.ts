@@ -19,6 +19,13 @@ export const createDocumentFromText = async (
 ) => {
   const chunks = splitTextIntoChunks(text);
 
+  if (chunks.length > 50) {
+    throw new ErrorResponse(
+      'Document has too many sections. Please upload a shorter or less fragmented document.',
+      400,
+    );
+  }
+
   // create initial document without embeddings
   let document: DocumentWithChunks;
   try {
