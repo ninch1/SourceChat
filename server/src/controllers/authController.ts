@@ -179,7 +179,7 @@ export const refreshAccessToken = asyncWrapper(async (req, res) => {
 
   // If the refresh token has expired
   if (refreshTokenRecord.expiresAt < new Date()) {
-    await prisma.refreshToken.delete({
+    await prisma.refreshToken.deleteMany({
       where: { id: refreshTokenRecord.id },
     });
 
@@ -201,18 +201,32 @@ export const refreshAccessToken = asyncWrapper(async (req, res) => {
   newRefreshTokenExpiresAt.setDate(newRefreshTokenExpiresAt.getDate() + 7);
 
   // Transaction ensures that both operations are completed or none are completed
-  await prisma.$transaction([
-    prisma.refreshToken.delete({
-      where: { id: refreshTokenRecord.id },
-    }),
-    prisma.refreshToken.create({
-      data: {
-        tokenHash: newRefreshTokenHash,
-        userId: refreshTokenRecord.userId,
-        expiresAt: newRefreshTokenExpiresAt,
-      },
-    }),
-  ]);
+  try {
+    await prisma.$transaction(async (tx) => {
+      const deleteResult = await tx.refreshToken.deleteMany({
+        where: { id: refreshTokenRecord.id },
+      });
+
+      if (deleteResult.count === 0) {
+        throw new ErrorResponse('Invalid refresh token', 401);
+      }
+
+      await tx.refreshToken.create({
+        data: {
+          tokenHash: newRefreshTokenHash,
+          userId: refreshTokenRecord.userId,
+          expiresAt: newRefreshTokenExpiresAt,
+        },
+      });
+    });
+  } catch (error) {
+    if (error instanceof ErrorResponse) {
+      res.clearCookie('refreshToken', refreshTokenCookieOptions);
+      throw error;
+    }
+
+    throw error;
+  }
 
   res.cookie('refreshToken', newRefreshToken, refreshTokenCookieOptions);
 
