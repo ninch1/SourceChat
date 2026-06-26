@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import multer from 'multer';
 import { ZodError } from 'zod';
+import { Prisma } from '../generated/prisma/client.js';
 
 import ErrorResponse from '../errors/errorResponse.js';
 
@@ -45,6 +46,17 @@ export const errorHandler = (
     return res.status(400).json({
       success: false,
       message: err.message,
+    });
+  }
+
+  // Handle Prisma unique constraint errors
+  if (
+    err instanceof Prisma.PrismaClientKnownRequestError &&
+    err.code === 'P2002'
+  ) {
+    return res.status(400).json({
+      success: false,
+      message: 'Email or username already in use',
     });
   }
 
