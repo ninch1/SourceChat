@@ -3,7 +3,13 @@ import { Router, type Request, type Response } from 'express';
 const router = Router();
 
 router.get('/', (req: Request, res: Response) => {
-  res.json({ status: 'ok' });
+  res.status(200).json({
+    success: true,
+    message: 'Server is healthy',
+    data: {
+      status: 'ok',
+    },
+  });
 });
 
 export default router;

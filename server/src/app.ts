@@ -7,6 +7,7 @@ import { errorHandler } from './middleware/errorHandler.js';
 import authRoutes from './routes/authRoutes.js';
 import cookieParser from 'cookie-parser';
 import ErrorResponse from './errors/errorResponse.js';
+import { generalRateLimiter } from './middleware/rateLimitMiddleware.js';
 
 const app = express();
 
@@ -18,6 +19,8 @@ app.use(
 );
 app.use(express.json());
 app.use(cookieParser());
+
+app.use(generalRateLimiter);
 
 app.get('/', (_req, res) => {
   res.status(200).json({

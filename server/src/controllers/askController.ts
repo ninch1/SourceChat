@@ -11,7 +11,7 @@ const AskRagSchema = z.object({
     .max(100, 'Question must be less than 100 characters'),
 });
 
-export const askQuestion = asyncWrapper(async (req, res) => {
+export const askRagQuestion = asyncWrapper(async (req, res) => {
   const user = getAuthUser(req);
   const { question } = AskRagSchema.parse(req.body);
 
