@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 
 @theme {
@@ -9,8 +10,8 @@
   --color-app-text: #f8fafc;
   --color-app-muted: #94a3b8;
 
-  --color-app-primary: #2563eb;
-  --color-app-primary-hover: #1d4ed8;
+  --color-app-primary: #10b981;
+  --color-app-primary-hover: #059669;
 }
 
 body {
@@ -18,4 +19,5 @@ body {
   min-height: 100vh;
   background: var(--color-app-bg);
   color: var(--color-app-text);
+  font-family: "Inter", system-ui, sans-serif;
 }

@@ -1,3 +1,9 @@
+import HeroPage from "./pages/HeroPage";
+
 export default function App() {
-  return <div>SourceChat</div>;
+  return (
+    <div>
+      <HeroPage />
+    </div>
+  );
 }
