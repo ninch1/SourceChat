@@ -1,5 +1,5 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import 'tailwindcss';
 
 @theme {
   --color-app-bg: #020617;
@@ -14,10 +14,46 @@
   --color-app-primary-hover: #059669;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
   background: var(--color-app-bg);
   color: var(--color-app-text);
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.landing-mesh-bg {
+  background:
+    radial-gradient(
+      ellipse 75% 55% at 88% 8%,
+      rgba(16, 185, 129, 0.17) 0%,
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 60% 65% at 8% 45%,
+      rgba(20, 184, 166, 0.11) 0%,
+      transparent 65%
+    ),
+    radial-gradient(
+      ellipse 85% 45% at 50% 98%,
+      rgba(16, 185, 129, 0.13) 0%,
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 48% 42% at 92% 62%,
+      rgba(20, 184, 166, 0.09) 0%,
+      transparent 65%
+    ),
+    radial-gradient(
+      ellipse 42% 38% at 18% 78%,
+      rgba(16, 185, 129, 0.08) 0%,
+      transparent 62%
+    ),
+    linear-gradient(180deg, #020617 0%, #05101e 50%, #020617 100%);
+
+  mask-image: linear-gradient(180deg, transparent 0%, black 16%, black 100%);
 }

@@ -9,7 +9,7 @@ export default function HeroSection() {
 
       <h1 className='mt-6 max-w-3xl text-5xl font-bold tracking-tight text-app-text md:text-7xl'>
         Chat with your{' '}
-        <span className='bg-gradient-to-r from-emerald-300 via-green-300 to-teal-300 bg-clip-text text-transparent'>
+        <span className='bg-linear-to-r from-emerald-300 via-green-300 to-teal-300 bg-clip-text text-transparent'>
           documents.
         </span>
       </h1>
