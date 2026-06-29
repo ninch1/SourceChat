@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 export default function MarketingNavbar() {
   return (
-    <header className='absolute left-0 right-0 top-6 z-20 px-6'>
+    <header className='fixed left-0 right-0 top-6 z-50 px-6'>
       <nav className='mx-auto flex h-14 max-w-3xl items-center justify-between rounded-full border border-app-border/70 bg-app-surface/60 px-5 backdrop-blur-xl'>
         <Link to='/' className='text-base font-bold tracking-tight'>
           <span className='text-emerald-400'>Source</span>

@@ -6,7 +6,7 @@ import HowItWorksSection from '../components/layout/landing/HowItWorksSection';
 
 export default function HeroPage() {
   return (
-    <main className='relative min-h-screen overflow-hidden bg-app-bg text-app-text'>
+    <main className='relative min-h-screen bg-app-bg text-app-text'>
       <MarketingNavbar />
 
       <section className='relative min-h-screen overflow-hidden'>
