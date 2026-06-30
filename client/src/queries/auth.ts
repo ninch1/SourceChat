@@ -1,5 +1,10 @@
-import { useMutation } from '@tanstack/react-query';
-import { registerUser, loginUser } from '../api/authApi';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import {
+  registerUser,
+  loginUser,
+  refreshAccessToken,
+  getCurrentUser,
+} from '../api/authApi';
 
 export const useRegisterUser = () => {
   return useMutation({
@@ -10,5 +15,25 @@ export const useRegisterUser = () => {
 export const useLoginUser = () => {
   return useMutation({
     mutationFn: loginUser,
+  });
+};
+
+export const useRefreshAccessToken = () => {
+  return useMutation({
+    mutationFn: refreshAccessToken,
+  });
+};
+
+export const useGetCurrentUser = (accessToken: string | null) => {
+  return useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => {
+      if (!accessToken) {
+        throw new Error('Access token is missing');
+      }
+
+      return getCurrentUser(accessToken);
+    },
+    enabled: Boolean(accessToken),
   });
 };

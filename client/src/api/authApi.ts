@@ -86,3 +86,74 @@ export const loginUser = async (
   const { user, accessToken } = data.data;
   return { user, accessToken };
 };
+
+export const refreshAccessToken = async (): Promise<string> => {
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_URL}/auth/refresh`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  } catch {
+    throw new Error('Something went wrong. Please try again later.');
+  }
+
+  if (!response.ok) {
+    let message = 'Something went wrong. Please try again later.';
+
+    try {
+      const error = await response.json();
+
+      if (error?.message) {
+        message = error.message;
+      }
+    } catch {
+      // Keep generic user-friendly message
+    }
+
+    throw new Error(message);
+  }
+  const data = await response.json();
+  const accessToken = data.data.accessToken;
+  return accessToken;
+};
+
+export const getCurrentUser = async (accessToken: string): Promise<User> => {
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_URL}/auth/me`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+  } catch {
+    throw new Error('Something went wrong. Please try again later.');
+  }
+
+  if (!response.ok) {
+    let message = 'Something went wrong. Please try again later.';
+
+    try {
+      const error = await response.json();
+
+      if (error?.message) {
+        message = error.message;
+      }
+    } catch {
+      // Keep generic user-friendly message
+    }
+
+    throw new Error(message);
+  }
+  const data = await response.json();
+  const user = data.data.user;
+  return user;
+};
