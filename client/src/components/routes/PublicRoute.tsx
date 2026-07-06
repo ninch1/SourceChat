@@ -1,5 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import AuthLoadingScreen from '../layout/AuthLoadingScreen';
 
 export default function PublicRoute({
   children,
@@ -9,7 +10,7 @@ export default function PublicRoute({
   const { user, isAuthLoading } = useAuth();
 
   if (isAuthLoading) {
-    return <div>Loading...</div>;
+    return <AuthLoadingScreen />;
   }
 
   if (user) {

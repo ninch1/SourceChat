@@ -1,5 +1,6 @@
-import { Navigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import AuthLoadingScreen from '../layout/AuthLoadingScreen';
 
 export default function ProtectedRoute({
   children,
@@ -9,11 +10,11 @@ export default function ProtectedRoute({
   const { user, isAuthLoading } = useAuth();
 
   if (isAuthLoading) {
-    return <div>Loading...</div>;
+    return <AuthLoadingScreen />;
   }
 
   if (!user) {
-    return <Navigate to="/login" />;
+    return <Navigate to='/login' />;
   }
 
   return children;

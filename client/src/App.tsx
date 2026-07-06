@@ -3,38 +3,72 @@ import HeroPage from './pages/HeroPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRefreshAccessToken, useGetCurrentUser } from './queries/auth';
 import { useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/routes/ProtectedRoute';
-import PublicRoute from './components/routes/PublicRotue';
+import PublicRoute from './components/routes/PublicRoute';
 
 export default function App() {
+  const hasTriedRefresh = useRef(false);
   const { setAuth, clearAuth } = useAuth();
 
   const {
     mutate: refreshAccessTokenMutation,
     data: accessToken,
     isError: isRefreshError,
+    isSuccess: isRefreshSuccess,
   } = useRefreshAccessToken();
 
-  const { data: currentUser } = useGetCurrentUser(accessToken ?? null);
+  const { data: currentUser, isError: isCurrentUserError } = useGetCurrentUser(
+    accessToken ?? null,
+  );
 
-  // On app startup, try to use the refresh-token cookie to get a new access token.
-  // This should restore the session after a page refresh.
+  // On app startup, try to restore the session from the refresh-token cookie.
   useEffect(() => {
-    refreshAccessTokenMutation();
-  }, [refreshAccessTokenMutation]);
+    if (hasTriedRefresh.current) return;
 
-  // If refresh fails, treat the user as logged out and clear any auth state in memory.
+    hasTriedRefresh.current = true;
+
+    let cancelled = false;
+
+    refreshAccessTokenMutation(undefined, {
+      onError: () => {
+        if (!cancelled) {
+          clearAuth();
+        }
+      },
+    });
+
+    // Strict Mode remounts the tree; reset so the new mount can retry refresh.
+    return () => {
+      cancelled = true;
+      hasTriedRefresh.current = false;
+    };
+  }, [refreshAccessTokenMutation, clearAuth]);
+
+  // Fallback when mutate onError does not run (e.g. after Strict Mode remount).
   useEffect(() => {
     if (isRefreshError) {
       clearAuth();
     }
   }, [isRefreshError, clearAuth]);
 
-  // Once refresh gives us an access token, use it to fetch the current user.
-  // When both are available, restore the full auth state in context.
+  // Refresh succeeded but returned no token — treat as logged out.
+  useEffect(() => {
+    if (isRefreshSuccess && !accessToken) {
+      clearAuth();
+    }
+  }, [isRefreshSuccess, accessToken, clearAuth]);
+
+  // If refresh succeeded but /auth/me fails, treat the user as logged out.
+  useEffect(() => {
+    if (isCurrentUserError) {
+      clearAuth();
+    }
+  }, [isCurrentUserError, clearAuth]);
+
+  // Once we have both the access token and current user, restore auth state.
   useEffect(() => {
     if (!accessToken || !currentUser) return;
 
@@ -46,14 +80,8 @@ export default function App() {
 
   return (
     <Routes>
-      <Route
-        path='/'
-        element={
-          <PublicRoute>
-            <HeroPage />
-          </PublicRoute>
-        }
-      />
+      <Route path='/' element={<HeroPage />} />
+
       <Route
         path='/login'
         element={
@@ -62,6 +90,7 @@ export default function App() {
           </PublicRoute>
         }
       />
+
       <Route
         path='/register'
         element={
@@ -70,6 +99,7 @@ export default function App() {
           </PublicRoute>
         }
       />
+
       <Route
         path='/dashboard'
         element={

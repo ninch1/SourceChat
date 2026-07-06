@@ -21,6 +21,7 @@ export const useLoginUser = () => {
 export const useRefreshAccessToken = () => {
   return useMutation({
     mutationFn: refreshAccessToken,
+    retry: false,
   });
 };
 
@@ -35,5 +36,6 @@ export const useGetCurrentUser = (accessToken: string | null) => {
       return getCurrentUser(accessToken);
     },
     enabled: Boolean(accessToken),
+    retry: false,
   });
 };
