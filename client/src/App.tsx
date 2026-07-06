@@ -1,12 +1,13 @@
-import { Route, Routes } from "react-router-dom";
-import HeroPage from "./pages/HeroPage";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import DashboardPage from "./pages/DashboardPage";
-import { useEffect } from "react";
-import { useRefreshAccessToken, useGetCurrentUser } from "./queries/auth";
-import { useAuth } from "./context/AuthContext";
-import ProtectedRoute from "./components/routes/ProtectedRoute";
+import { Route, Routes } from 'react-router-dom';
+import HeroPage from './pages/HeroPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import DashboardPage from './pages/DashboardPage';
+import { useEffect } from 'react';
+import { useRefreshAccessToken, useGetCurrentUser } from './queries/auth';
+import { useAuth } from './context/AuthContext';
+import ProtectedRoute from './components/routes/ProtectedRoute';
+import PublicRoute from './components/routes/PublicRotue';
 
 export default function App() {
   const { setAuth, clearAuth } = useAuth();
@@ -45,11 +46,32 @@ export default function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<HeroPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
       <Route
-        path="/dashboard"
+        path='/'
+        element={
+          <PublicRoute>
+            <HeroPage />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path='/login'
+        element={
+          <PublicRoute>
+            <LoginPage />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path='/register'
+        element={
+          <PublicRoute>
+            <RegisterPage />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path='/dashboard'
         element={
           <ProtectedRoute>
             <DashboardPage />
