@@ -40,10 +40,8 @@ export default function App() {
       },
     });
 
-    // Strict Mode remounts the tree; reset so the new mount can retry refresh.
     return () => {
       cancelled = true;
-      hasTriedRefresh.current = false;
     };
   }, [refreshAccessTokenMutation, clearAuth]);
 

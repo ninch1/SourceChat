@@ -27,7 +27,7 @@ export const useRefreshAccessToken = () => {
 
 export const useGetCurrentUser = (accessToken: string | null) => {
   return useQuery({
-    queryKey: ['currentUser'],
+    queryKey: ['currentUser', accessToken],
     queryFn: () => {
       if (!accessToken) {
         throw new Error('Access token is missing');

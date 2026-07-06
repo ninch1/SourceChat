@@ -1,6 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import AuthLoadingScreen from '../layout/AuthLoadingScreen';
+import AuthLoadingScreen from '../ui/AuthLoadingScreen';
 
 export default function PublicRoute({
   children,
