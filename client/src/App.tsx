@@ -1,80 +1,76 @@
 import { Route, Routes } from 'react-router-dom';
+
 import HeroPage from './pages/HeroPage';
+
 import LoginPage from './pages/LoginPage';
+
 import RegisterPage from './pages/RegisterPage';
+
 import DashboardPage from './pages/DashboardPage';
-import { useEffect, useRef } from 'react';
-import { useRefreshAccessToken, useGetCurrentUser } from './queries/auth';
+
+import { useEffect } from 'react';
+
+import { refreshAccessToken, getCurrentUser } from './api/authApi';
+
 import { useAuth } from './context/AuthContext';
+
 import ProtectedRoute from './components/routes/ProtectedRoute';
+
 import PublicRoute from './components/routes/PublicRoute';
 
+import type { User } from './types/auth';
+
+type RestoredSession = { user: User; accessToken: string };
+
+let restoreAuthSessionPromise: Promise<RestoredSession> | null = null;
+
+async function restoreAuthSession(): Promise<RestoredSession> {
+  if (!restoreAuthSessionPromise) {
+    restoreAuthSessionPromise = (async () => {
+      const accessToken = await refreshAccessToken();
+      const user = await getCurrentUser(accessToken);
+      return { user, accessToken };
+    })();
+
+    // Allow a future app startup/manual restore attempt to try again.
+    restoreAuthSessionPromise.finally(() => {
+      restoreAuthSessionPromise = null;
+    });
+  }
+
+  return restoreAuthSessionPromise;
+}
+
 export default function App() {
-  const hasTriedRefresh = useRef(false);
   const { setAuth, clearAuth } = useAuth();
 
-  const {
-    mutate: refreshAccessTokenMutation,
-    data: accessToken,
-    isError: isRefreshError,
-    isSuccess: isRefreshSuccess,
-  } = useRefreshAccessToken();
+  // One-time session restore on mount. Route guards handle redirects.
 
-  const { data: currentUser, isError: isCurrentUserError } = useGetCurrentUser(
-    accessToken ?? null,
-  );
-
-  // On app startup, try to restore the session from the refresh-token cookie.
   useEffect(() => {
-    if (hasTriedRefresh.current) return;
-
-    hasTriedRefresh.current = true;
-
     let cancelled = false;
 
-    refreshAccessTokenMutation(undefined, {
-      onError: () => {
+    async function restoreSession() {
+      try {
+        const restored = await restoreAuthSession();
+        if (cancelled) return;
+        setAuth(restored);
+      } catch {
         if (!cancelled) {
           clearAuth();
         }
-      },
-    });
+      }
+    }
+
+    restoreSession();
 
     return () => {
       cancelled = true;
     };
-  }, [refreshAccessTokenMutation, clearAuth]);
 
-  // Fallback when mutate onError does not run (e.g. after Strict Mode remount).
-  useEffect(() => {
-    if (isRefreshError) {
-      clearAuth();
-    }
-  }, [isRefreshError, clearAuth]);
-
-  // Refresh succeeded but returned no token — treat as logged out.
-  useEffect(() => {
-    if (isRefreshSuccess && !accessToken) {
-      clearAuth();
-    }
-  }, [isRefreshSuccess, accessToken, clearAuth]);
-
-  // If refresh succeeded but /auth/me fails, treat the user as logged out.
-  useEffect(() => {
-    if (isCurrentUserError) {
-      clearAuth();
-    }
-  }, [isCurrentUserError, clearAuth]);
-
-  // Once we have both the access token and current user, restore auth state.
-  useEffect(() => {
-    if (!accessToken || !currentUser) return;
-
-    setAuth({
-      user: currentUser,
-      accessToken,
-    });
-  }, [accessToken, currentUser, setAuth]);
+    // This is an app-startup initializer. It should run once on mount only.
+    // Route guards handle redirects after auth state settles.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Routes>
