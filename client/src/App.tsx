@@ -18,6 +18,8 @@ import ProtectedRoute from './components/routes/ProtectedRoute';
 
 import PublicRoute from './components/routes/PublicRoute';
 
+import IndexRoute from './components/routes/IndexRoute';
+
 import type { User } from './types/auth';
 
 type RestoredSession = { user: User; accessToken: string };
@@ -74,7 +76,9 @@ export default function App() {
 
   return (
     <Routes>
-      <Route path='/' element={<HeroPage />} />
+      <Route path='/' element={<IndexRoute />} />
+
+      <Route path='/welcome' element={<HeroPage />} />
 
       <Route
         path='/login'
