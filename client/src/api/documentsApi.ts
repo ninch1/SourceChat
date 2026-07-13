@@ -1,23 +1,11 @@
 import type { GetDocumentsResponse } from '../types/document';
-import { getApiUrl } from '../utils/getApiUrl';
 
-const API_URL = getApiUrl();
+type AuthFetch = (path: string, options?: RequestInit) => Promise<Response>;
 
 export const getDocuments = async (
-  accessToken: string,
+  authFetch: AuthFetch,
 ): Promise<GetDocumentsResponse> => {
-  let response: Response;
-
-  try {
-    response = await fetch(`${API_URL}/documents`, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
-  } catch {
-    throw new Error('Something went wrong. Please try again later.');
-  }
+  const response = await authFetch('/documents');
 
   if (!response.ok) {
     let message = 'Something went wrong. Please try again later.';
