@@ -78,7 +78,7 @@ export const createDocument = asyncWrapper(async (req, res) => {
   const { title, text } = CreateDocumentSchema.parse(req.body);
 
   const document = await createDocumentFromText(title, text, user.id);
-  const safeDocumentData = safeDocumentWithChunks(document);
+  const safeDocumentData = safeDocument(document);
   res.status(201).json({
     success: true,
     message: 'Document created successfully',

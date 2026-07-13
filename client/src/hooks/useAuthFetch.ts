@@ -1,7 +1,7 @@
-import { useCallback } from 'react';
-import { getCurrentUser, refreshAccessToken } from '../api/authApi';
-import { useAuth } from '../context/AuthContext';
-import { getApiUrl } from '../utils/getApiUrl';
+import { useCallback } from "react";
+import { getCurrentUser, refreshAccessToken } from "../api/authApi";
+import { useAuth } from "../context/AuthContext";
+import { getApiUrl } from "../utils/getApiUrl";
 
 const API_URL = getApiUrl();
 
@@ -15,7 +15,7 @@ const API_URL = getApiUrl();
 // authFetch has the same basic shape as fetch:
 // pass the API path plus normal fetch options like method, headers, and body.
 // Example:
-// authFetch('/documents/text', {
+// authFetch('/documents', {
 //   method: 'POST',
 //   headers: { 'Content-Type': 'application/json' },
 //   body: JSON.stringify({ title, content }),
@@ -27,7 +27,7 @@ export function useAuthFetch() {
   const authFetch = useCallback(
     async (path: string, options: RequestInit = {}) => {
       if (!accessToken) {
-        throw new Error('Access token is missing');
+        throw new Error("Access token is missing");
       }
 
       // Small helper so the first request and the retry request are built
@@ -37,7 +37,7 @@ export function useAuthFetch() {
 
         // Always attach the current access token to protected API requests.
         // Any custom headers passed in options are preserved above.
-        headers.set('Authorization', `Bearer ${token}`);
+        headers.set("Authorization", `Bearer ${token}`);
 
         return fetch(`${API_URL}${path}`, {
           ...options,
@@ -74,14 +74,14 @@ export function useAuthFetch() {
         // If it still fails with 401 after refresh, the session is no longer valid.
         if (response.status === 401) {
           clearAuth();
-          throw new Error('Unauthorized');
+          throw new Error("Unauthorized");
         }
 
         return response;
       } catch {
         // If refresh fails, clear auth so ProtectedRoute can redirect to login.
         clearAuth();
-        throw new Error('Your session expired. Please log in again.');
+        throw new Error("Your session expired. Please log in again.");
       }
     },
     [accessToken, setAuth, clearAuth],

@@ -15,3 +15,12 @@ export interface GetDocumentsResponse {
   documents: DocumentSummary[];
   pagination: DocumentsPagination;
 }
+
+export interface CreateTextDocumentData {
+  title: string;
+  text: string;
+}
+
+export interface CreateDocumentResponse {
+  document: DocumentSummary;
+}

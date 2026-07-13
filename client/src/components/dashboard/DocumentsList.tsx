@@ -8,8 +8,10 @@ import type { DocumentSummary } from '../../types/document';
 
 export default function DocumentsList({
   documents,
+  onAddSource,
 }: {
   documents: DocumentSummary[];
+  onAddSource: () => void;
 }) {
   return (
     <section>
@@ -24,7 +26,11 @@ export default function DocumentsList({
           </p>
         </div>
 
-        <button className='cursor-pointer rounded-xl border border-app-border px-4 py-2 text-sm font-medium text-app-text transition hover:bg-app-card'>
+        <button
+          type='button'
+          onClick={onAddSource}
+          className='cursor-pointer rounded-xl border border-app-border px-4 py-2 text-sm font-medium text-app-text transition hover:bg-app-card'
+        >
           Add source
         </button>
       </div>
