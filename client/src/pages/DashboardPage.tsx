@@ -1,8 +1,12 @@
 import DashboardHeader from '../components/dashboard/DashboardHeader';
 import DashboardSidebar from '../components/dashboard/DashboardSidebar';
 import EmptyDocumentsState from '../components/dashboard/EmptyDocumentsState';
+import { useGetDocuments } from '../queries/document';
+import DocumentsList from '../components/dashboard/DocumentsList';
 
 export default function DashboardPage() {
+  const { data: documentsData, isLoading, isError, error } = useGetDocuments();
+
   return (
     <div className='min-h-screen bg-app-bg text-app-text'>
       <div className='flex min-h-screen'>
@@ -28,7 +32,15 @@ export default function DashboardPage() {
                 </p>
               </div>
 
-              <EmptyDocumentsState />
+              {isLoading ? (
+                <div>Loading...</div>
+              ) : isError ? (
+                <div>Error: {error.message}</div>
+              ) : documentsData?.documents.length === 0 ? (
+                <EmptyDocumentsState />
+              ) : (
+                <DocumentsList documents={documentsData?.documents ?? []} />
+              )}
             </div>
           </main>
         </div>

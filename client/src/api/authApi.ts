@@ -4,9 +4,9 @@ import type {
   RegisterUserData,
   User,
 } from '../types/auth';
+import { getApiUrl } from '../utils/getApiUrl';
 
-const API_URL = import.meta.env.VITE_API_URL;
-if (!API_URL) throw new Error('VITE_API_URL is not set');
+const API_URL = getApiUrl();
 
 export const registerUser = async (
   userData: RegisterUserData,
