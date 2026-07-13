@@ -4,14 +4,13 @@ import {
   MessageSquare,
   MoreHorizontal,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import type { DocumentSummary } from '../../types/document';
 
 export default function DocumentsList({
   documents,
-  onAddSource,
 }: {
   documents: DocumentSummary[];
-  onAddSource: () => void;
 }) {
   return (
     <section>
@@ -26,13 +25,12 @@ export default function DocumentsList({
           </p>
         </div>
 
-        <button
-          type='button'
-          onClick={onAddSource}
+        <Link
+          to='/dashboard/new-source'
           className='cursor-pointer rounded-xl border border-app-border px-4 py-2 text-sm font-medium text-app-text transition hover:bg-app-card'
         >
           Add source
-        </button>
+        </Link>
       </div>
 
       <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-3'>

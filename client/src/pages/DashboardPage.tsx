@@ -1,17 +1,11 @@
-import { useState } from 'react';
 import DashboardHeader from '../components/dashboard/DashboardHeader';
 import DashboardSidebar from '../components/dashboard/DashboardSidebar';
 import EmptyDocumentsState from '../components/dashboard/EmptyDocumentsState';
 import { useGetDocuments } from '../queries/document';
 import DocumentsList from '../components/dashboard/DocumentsList';
-import AddSourceModal from '../components/dashboard/AddSourceModal';
 
 export default function DashboardPage() {
   const { data: documentsData, isLoading, isError, error } = useGetDocuments();
-  const [isAddSourceOpen, setIsAddSourceOpen] = useState(false);
-
-  const openAddSource = () => setIsAddSourceOpen(true);
-  const closeAddSource = () => setIsAddSourceOpen(false);
 
   return (
     <div className='min-h-screen bg-app-bg text-app-text'>
@@ -43,19 +37,14 @@ export default function DashboardPage() {
               ) : isError ? (
                 <div>Error: {error.message}</div>
               ) : documentsData?.documents.length === 0 ? (
-                <EmptyDocumentsState onAddSource={openAddSource} />
+                <EmptyDocumentsState />
               ) : (
-                <DocumentsList
-                  documents={documentsData?.documents ?? []}
-                  onAddSource={openAddSource}
-                />
+                <DocumentsList documents={documentsData?.documents ?? []} />
               )}
             </div>
           </main>
         </div>
       </div>
-
-      <AddSourceModal isOpen={isAddSourceOpen} onClose={closeAddSource} />
     </div>
   );
 }

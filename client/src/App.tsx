@@ -8,6 +8,8 @@ import RegisterPage from './pages/RegisterPage';
 
 import DashboardPage from './pages/DashboardPage';
 
+import NewSourcePage from './pages/NewSourcePage';
+
 import { useEffect } from 'react';
 
 import { refreshAccessToken, getCurrentUser } from './api/authApi';
@@ -103,6 +105,15 @@ export default function App() {
         element={
           <ProtectedRoute>
             <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path='/dashboard/new-source'
+        element={
+          <ProtectedRoute>
+            <NewSourcePage />
           </ProtectedRoute>
         }
       />

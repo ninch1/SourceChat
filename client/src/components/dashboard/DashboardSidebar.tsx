@@ -1,4 +1,12 @@
 import { FileText, MessageSquare, Plus, Settings } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
+
+const navLinkClasses = ({ isActive }: { isActive: boolean }) =>
+  `flex w-full cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium transition ${
+    isActive
+      ? 'bg-app-card text-app-text shadow-sm'
+      : 'text-app-muted hover:bg-app-card hover:text-app-text'
+  }`;
 
 export default function DashboardSidebar() {
   return (
@@ -13,15 +21,15 @@ export default function DashboardSidebar() {
       </div>
 
       <nav className='space-y-2'>
-        <button className='flex w-full cursor-pointer items-center gap-3 rounded-xl bg-app-card px-4 py-3 text-left text-sm font-medium text-app-text shadow-sm'>
+        <NavLink to='/dashboard' end className={navLinkClasses}>
           <FileText className='h-4 w-4' />
           Documents
-        </button>
+        </NavLink>
 
-        <button className='flex w-full cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium text-app-muted transition hover:bg-app-card hover:text-app-text'>
+        <NavLink to='/dashboard/new-source' className={navLinkClasses}>
           <Plus className='h-4 w-4' />
           New source
-        </button>
+        </NavLink>
 
         <button className='flex w-full cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium text-app-muted transition hover:bg-app-card hover:text-app-text'>
           <MessageSquare className='h-4 w-4' />
