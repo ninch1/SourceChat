@@ -16,6 +16,8 @@ import DocumentDetailPage from './pages/DocumentDetailPage';
 
 import SettingsPage from './pages/SettingsPage';
 
+import NotFoundPage from './pages/NotFoundPage';
+
 import { useEffect } from 'react';
 
 import { refreshAccessToken, getCurrentUser } from './api/authApi';
@@ -150,6 +152,8 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+
+      <Route path='*' element={<NotFoundPage />} />
     </Routes>
   );
 }
