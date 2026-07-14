@@ -31,10 +31,10 @@ export default function DashboardSidebar() {
           New source
         </NavLink>
 
-        <button className='flex w-full cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium text-app-muted transition hover:bg-app-card hover:text-app-text'>
+        <NavLink to='/dashboard/ask' className={navLinkClasses}>
           <MessageSquare className='h-4 w-4' />
-          Chats
-        </button>
+          Ask
+        </NavLink>
 
         <button className='flex w-full cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium text-app-muted transition hover:bg-app-card hover:text-app-text'>
           <Settings className='h-4 w-4' />

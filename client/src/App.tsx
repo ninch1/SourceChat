@@ -10,6 +10,8 @@ import DashboardPage from './pages/DashboardPage';
 
 import NewSourcePage from './pages/NewSourcePage';
 
+import AskPage from './pages/AskPage';
+
 import { useEffect } from 'react';
 
 import { refreshAccessToken, getCurrentUser } from './api/authApi';
@@ -114,6 +116,15 @@ export default function App() {
         element={
           <ProtectedRoute>
             <NewSourcePage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path='/dashboard/ask'
+        element={
+          <ProtectedRoute>
+            <AskPage />
           </ProtectedRoute>
         }
       />
