@@ -21,6 +21,7 @@ export const refreshTokenCookieOptions = {
   sameSite: (process.env.NODE_ENV === 'production'
     ? 'strict'
     : 'lax') as 'strict' | 'lax',
+  path: '/',
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 

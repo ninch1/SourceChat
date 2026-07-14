@@ -256,7 +256,7 @@ export const logoutUser = asyncWrapper(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    message: 'User logged out successfully',
+    message: 'Logged out successfully',
   });
 });
 

@@ -157,3 +157,35 @@ export const getCurrentUser = async (accessToken: string): Promise<User> => {
   const user = data.data.user;
   return user;
 };
+
+export const logoutUser = async (): Promise<void> => {
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_URL}/auth/logout`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  } catch {
+    throw new Error('Something went wrong. Please try again later.');
+  }
+
+  if (!response.ok) {
+    let message = 'Something went wrong. Please try again later.';
+
+    try {
+      const error = await response.json();
+
+      if (error?.message) {
+        message = error.message;
+      }
+    } catch {
+      // Keep generic user-friendly message
+    }
+
+    throw new Error(message);
+  }
+};
