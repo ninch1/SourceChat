@@ -27,7 +27,9 @@ const getErrorMessage = async (response: Response) => {
 export const getDocuments = async (
   authFetch: AuthFetch,
 ): Promise<GetDocumentsResponse> => {
-  const response = await authFetch('/documents');
+  // Backend defaults to limit=10; request the documented max so dashboard/settings
+  // are not silently truncated for typical MVP workspace sizes.
+  const response = await authFetch('/documents?limit=100');
 
   if (!response.ok) {
     throw new Error(await getErrorMessage(response));

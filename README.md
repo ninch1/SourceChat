@@ -112,10 +112,10 @@ REFRESH_RATE_LIMIT=60
 
 ## Running Locally
 
-Start the PostgreSQL database:
+Start the PostgreSQL database (from the repo root):
 
 ```bash
-docker compose up -d
+docker compose -f server/docker-compose.yml up -d
 ```
 
 Install dependencies:
@@ -137,12 +137,6 @@ Generate Prisma client:
 npx prisma generate
 ```
 
-Seed the database:
-
-```bash
-npm run db:seed
-```
-
 Start the development server:
 
 ```bash
@@ -154,6 +148,14 @@ The server will run on:
 ```txt
 http://localhost:3000
 ```
+
+For the React client, copy `client/.env.example` to `client/.env` and set:
+
+```txt
+VITE_API_URL=http://localhost:3000/api
+```
+
+In production, set `NODE_ENV=production`, a real `CLIENT_ORIGIN` matching your frontend origin, and strong unique `ACCESS_TOKEN_SECRET` / `REFRESH_TOKEN_SECRET`. Use `npx prisma migrate deploy` (not `migrate dev`) on the production database.
 
 ## API Endpoints
 

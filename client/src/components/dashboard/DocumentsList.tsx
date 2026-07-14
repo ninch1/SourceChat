@@ -58,7 +58,7 @@ export default function DocumentsList({
           </h2>
           <p className='mt-1 text-sm text-app-muted'>
             {documents.length} {documents.length === 1 ? 'source' : 'sources'}{' '}
-            available for chat.
+            available for ask.
           </p>
         </div>
 

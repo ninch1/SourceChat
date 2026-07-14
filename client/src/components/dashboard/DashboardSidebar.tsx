@@ -16,7 +16,7 @@ export default function DashboardSidebar() {
           SourceChat
         </h1>
         <p className='mt-1 text-sm text-app-muted'>
-          Chat with your own sources
+          Ask questions from your sources
         </p>
       </div>
 

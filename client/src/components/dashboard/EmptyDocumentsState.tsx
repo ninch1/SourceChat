@@ -13,8 +13,8 @@ export default function EmptyDocumentsState() {
       </h3>
 
       <p className='mx-auto mt-2 max-w-md text-sm leading-6 text-app-muted'>
-        Upload a PDF, paste text, or add a source to start asking questions with
-        citations from your own material.
+        Upload a .txt file, paste text, or add a source to start asking questions
+        with citations from your own material.
       </p>
 
       <div className='mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row'>
@@ -24,13 +24,6 @@ export default function EmptyDocumentsState() {
         >
           <Plus className='h-4 w-4' />
           Add source
-        </Link>
-
-        <Link
-          to='/dashboard/new-source'
-          className='cursor-pointer rounded-xl border border-app-border px-5 py-3 text-sm font-semibold text-app-text transition hover:bg-app-card'
-        >
-          Paste text
         </Link>
       </div>
     </section>

@@ -27,7 +27,7 @@ export const useGetDocumentById = (documentId: number | null) => {
   const authFetch = useAuthFetch();
 
   return useQuery({
-    queryKey: ['document', documentId],
+    queryKey: ['document', documentId, accessToken],
     queryFn: () => {
       if (documentId === null) {
         throw new Error('Document id is missing');

@@ -1,7 +1,14 @@
-import { LogOut, Search } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { LogOut } from 'lucide-react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useLogoutUser } from '../../queries/auth';
+
+const mobileNavLinkClasses = ({ isActive }: { isActive: boolean }) =>
+  `rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+    isActive
+      ? 'bg-app-card text-app-text'
+      : 'text-app-muted hover:bg-app-card hover:text-app-text'
+  }`;
 
 export default function DashboardHeader() {
   const { user, clearAuth } = useAuth();
@@ -26,22 +33,13 @@ export default function DashboardHeader() {
   };
 
   return (
-    <header className='flex items-center justify-between border-b border-app-border bg-app-bg/80 px-6 py-4 backdrop-blur'>
-      <div>
-        <p className='text-sm text-app-muted'>Welcome back</p>
-        <h2 className='text-xl font-semibold text-app-text'>
-          {user?.username ?? 'Dashboard'}
-        </h2>
-      </div>
-
-      <div className='flex items-center gap-3'>
-        <div className='hidden items-center gap-2 rounded-xl border border-app-border bg-app-card px-3 py-2 md:flex'>
-          <Search className='h-4 w-4 text-app-muted' />
-          <input
-            type='text'
-            placeholder='Search documents...'
-            className='w-48 bg-transparent text-sm text-app-text outline-none placeholder:text-app-muted'
-          />
+    <header className='border-b border-app-border bg-app-bg/80 backdrop-blur'>
+      <div className='flex items-center justify-between px-6 py-4'>
+        <div>
+          <p className='text-sm text-app-muted'>Welcome back</p>
+          <h2 className='text-xl font-semibold text-app-text'>
+            {user?.username ?? 'Dashboard'}
+          </h2>
         </div>
 
         <button
@@ -56,6 +54,22 @@ export default function DashboardHeader() {
           <LogOut className='h-4 w-4 sm:hidden' />
         </button>
       </div>
+
+      {/* Compact nav for viewports where the sidebar is hidden */}
+      <nav className='flex gap-1 overflow-x-auto px-6 pb-3 lg:hidden'>
+        <NavLink to='/dashboard' end className={mobileNavLinkClasses}>
+          Documents
+        </NavLink>
+        <NavLink to='/dashboard/new-source' className={mobileNavLinkClasses}>
+          New source
+        </NavLink>
+        <NavLink to='/dashboard/ask' className={mobileNavLinkClasses}>
+          Ask
+        </NavLink>
+        <NavLink to='/dashboard/settings' className={mobileNavLinkClasses}>
+          Settings
+        </NavLink>
+      </nav>
     </header>
   );
 }

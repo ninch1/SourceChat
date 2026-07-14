@@ -14,6 +14,12 @@ const app = express();
 
 if (process.env.NODE_ENV === 'production') {
   app.set('trust proxy', 1);
+
+  if (!process.env.CLIENT_ORIGIN) {
+    throw new Error(
+      'CLIENT_ORIGIN must be set in production for CORS with credentials.',
+    );
+  }
 }
 
 app.use(helmet());
@@ -24,7 +30,7 @@ app.use(
     credentials: true,
   }),
 );
-app.use(express.json());
+app.use(express.json({ limit: '100kb' }));
 app.use(cookieParser());
 
 app.use(generalRateLimiter);
