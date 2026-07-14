@@ -18,9 +18,9 @@ type TokenPayload = {
 export const refreshTokenCookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: (process.env.NODE_ENV === 'production'
-    ? 'strict'
-    : 'lax') as 'strict' | 'lax',
+  sameSite: (process.env.NODE_ENV === 'production' ? 'strict' : 'lax') as
+    | 'strict'
+    | 'lax',
   path: '/',
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };

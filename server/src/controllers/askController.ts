@@ -7,8 +7,8 @@ const AskRagSchema = z.object({
   question: z
     .string()
     .trim()
-    .min(1, 'Question is required')
-    .max(100, 'Question must be less than 100 characters'),
+    .min(3, 'Question must be at least 3 characters')
+    .max(500, 'Question must be less than 500 characters'),
 });
 
 export const askRagQuestion = asyncWrapper(async (req, res) => {

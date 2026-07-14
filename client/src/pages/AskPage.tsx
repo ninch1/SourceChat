@@ -13,7 +13,8 @@ import { useAskQuestion } from '../queries/ask';
 import { useGetDocuments } from '../queries/document';
 import type { AskQuestionResponse } from '../types/ask';
 
-const QUESTION_MAX_LENGTH = 100;
+const QUESTION_MIN_LENGTH = 3;
+const QUESTION_MAX_LENGTH = 500;
 
 export default function AskPage() {
   const [question, setQuestion] = useState('');
@@ -38,7 +39,8 @@ export default function AskPage() {
   const hasDocuments = documents.length > 0;
   const trimmedQuestion = question.trim();
   const isFormValid =
-    trimmedQuestion.length > 0 && trimmedQuestion.length <= QUESTION_MAX_LENGTH;
+    trimmedQuestion.length >= QUESTION_MIN_LENGTH &&
+    trimmedQuestion.length <= QUESTION_MAX_LENGTH;
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
