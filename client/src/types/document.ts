@@ -4,6 +4,24 @@ export interface DocumentSummary {
   createdAt: string;
 }
 
+export interface DocumentChunk {
+  id: number;
+  text: string;
+  keywords: string[];
+  createdAt: string;
+}
+
+export interface DocumentDetail {
+  id: number;
+  title: string;
+  createdAt: string;
+  chunks: DocumentChunk[];
+}
+
+export interface GetDocumentByIdResponse {
+  document: DocumentDetail;
+}
+
 export interface DocumentsPagination {
   page: number;
   limit: number;

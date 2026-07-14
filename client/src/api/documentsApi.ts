@@ -2,6 +2,7 @@ import type {
   CreateDocumentResponse,
   CreateTextDocumentData,
   DeleteAllDocumentsResponse,
+  GetDocumentByIdResponse,
   GetDocumentsResponse,
 } from '../types/document';
 
@@ -27,6 +28,21 @@ export const getDocuments = async (
   authFetch: AuthFetch,
 ): Promise<GetDocumentsResponse> => {
   const response = await authFetch('/documents');
+
+  if (!response.ok) {
+    throw new Error(await getErrorMessage(response));
+  }
+
+  const data = await response.json();
+
+  return data.data;
+};
+
+export const getDocumentById = async (
+  authFetch: AuthFetch,
+  documentId: number,
+): Promise<GetDocumentByIdResponse> => {
+  const response = await authFetch(`/documents/${documentId}`);
 
   if (!response.ok) {
     throw new Error(await getErrorMessage(response));

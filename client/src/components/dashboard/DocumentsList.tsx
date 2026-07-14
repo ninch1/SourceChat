@@ -5,7 +5,7 @@ import {
   MessageSquare,
   Trash2,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import type { DocumentSummary } from '../../types/document';
 import { useDeleteDocument } from '../../queries/document';
 
@@ -18,6 +18,7 @@ export default function DocumentsList({
   onDeleteAll?: () => void;
   isDeletingAll?: boolean;
 }) {
+  const navigate = useNavigate();
   const {
     mutate: deleteDocument,
     isPending: isDeleting,
@@ -38,6 +39,14 @@ export default function DocumentsList({
 
     reset();
     deleteDocument(document.id);
+  };
+
+  const openDocument = (documentId: number) => {
+    if (isDeleting || isDeletingAll) {
+      return;
+    }
+
+    navigate(`/dashboard/documents/${documentId}`);
   };
 
   return (
@@ -88,8 +97,17 @@ export default function DocumentsList({
           return (
             <article
               key={document.id}
-              className={`group rounded-2xl border border-app-border bg-app-surface/70 p-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-app-card ${
-                isThisDeleting ? 'opacity-60' : ''
+              role='link'
+              tabIndex={0}
+              onClick={() => openDocument(document.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  openDocument(document.id);
+                }
+              }}
+              className={`group cursor-pointer rounded-2xl border border-app-border bg-app-surface/70 p-5 shadow-sm transition hover:-translate-y-0.5 hover:bg-app-card ${
+                isThisDeleting ? 'pointer-events-none opacity-60' : ''
               }`}
             >
               <div className='mb-5 flex items-start justify-between gap-4'>
@@ -99,7 +117,10 @@ export default function DocumentsList({
 
                 <button
                   type='button'
-                  onClick={() => handleDelete(document)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(document);
+                  }}
                   disabled={isDeleting || isDeletingAll}
                   className='cursor-pointer rounded-lg p-1.5 text-app-muted transition hover:bg-red-400/10 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50'
                   aria-label={`Delete ${document.title}`}
@@ -128,14 +149,10 @@ export default function DocumentsList({
                   {isThisDeleting ? 'Deleting...' : 'Ready'}
                 </span>
 
-                <button
-                  type='button'
-                  disabled={isThisDeleting}
-                  className='inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-emerald-400 transition hover:text-emerald-300 disabled:cursor-not-allowed disabled:opacity-50'
-                >
+                <span className='inline-flex items-center gap-2 text-sm font-medium text-emerald-400 transition group-hover:text-emerald-300'>
                   <MessageSquare className='h-4 w-4' />
-                  Chat
-                </button>
+                  Open
+                </span>
               </div>
             </article>
           );

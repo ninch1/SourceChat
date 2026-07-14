@@ -12,6 +12,8 @@ import NewSourcePage from './pages/NewSourcePage';
 
 import AskPage from './pages/AskPage';
 
+import DocumentDetailPage from './pages/DocumentDetailPage';
+
 import { useEffect } from 'react';
 
 import { refreshAccessToken, getCurrentUser } from './api/authApi';
@@ -125,6 +127,15 @@ export default function App() {
         element={
           <ProtectedRoute>
             <AskPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path='/dashboard/documents/:documentId'
+        element={
+          <ProtectedRoute>
+            <DocumentDetailPage />
           </ProtectedRoute>
         }
       />

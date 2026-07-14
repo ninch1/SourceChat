@@ -3,6 +3,7 @@ import {
   createDocumentFromText,
   deleteAllDocuments,
   deleteDocument,
+  getDocumentById,
   getDocuments,
   uploadDocument,
 } from '../api/documentsApi';
@@ -18,6 +19,23 @@ export const useGetDocuments = () => {
     queryKey: ['documents', accessToken],
     queryFn: () => getDocuments(authFetch),
     enabled: Boolean(accessToken),
+  });
+};
+
+export const useGetDocumentById = (documentId: number | null) => {
+  const { accessToken } = useAuth();
+  const authFetch = useAuthFetch();
+
+  return useQuery({
+    queryKey: ['document', documentId],
+    queryFn: () => {
+      if (documentId === null) {
+        throw new Error('Document id is missing');
+      }
+
+      return getDocumentById(authFetch, documentId);
+    },
+    enabled: Boolean(accessToken) && documentId !== null,
   });
 };
 
@@ -55,8 +73,9 @@ export const useDeleteDocument = () => {
 
   return useMutation({
     mutationFn: (documentId: number) => deleteDocument(authFetch, documentId),
-    onSuccess: () => {
+    onSuccess: (_data, documentId) => {
       queryClient.invalidateQueries({ queryKey: ['documents'] });
+      queryClient.invalidateQueries({ queryKey: ['document', documentId] });
     },
   });
 };
@@ -69,6 +88,7 @@ export const useDeleteAllDocuments = () => {
     mutationFn: () => deleteAllDocuments(authFetch),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documents'] });
+      queryClient.invalidateQueries({ queryKey: ['document'] });
     },
   });
 };
