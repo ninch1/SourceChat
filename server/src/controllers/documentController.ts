@@ -115,7 +115,7 @@ export const uploadDocumentFile = asyncWrapper(async (req, res) => {
     user.id,
   );
 
-  const safeDocumentData = safeDocumentWithChunks(document);
+  const safeDocumentData = safeDocument(document);
   res.status(201).json({
     success: true,
     message: 'Document uploaded successfully',

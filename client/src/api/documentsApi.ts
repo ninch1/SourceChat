@@ -64,3 +64,42 @@ export const createDocumentFromText = async (
 
   return data.data;
 };
+
+export const uploadDocument = async (
+  authFetch: AuthFetch,
+  file: File,
+  title?: string,
+): Promise<CreateDocumentResponse> => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const trimmedTitle = title?.trim();
+  if (trimmedTitle) {
+    formData.append('title', trimmedTitle);
+  }
+
+  const response = await authFetch('/documents/upload', {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    let message = 'Something went wrong. Please try again later.';
+
+    try {
+      const error = await response.json();
+
+      if (error?.message) {
+        message = error.message;
+      }
+    } catch {
+      // Keep generic message
+    }
+
+    throw new Error(message);
+  }
+
+  const data = await response.json();
+
+  return data.data;
+};
