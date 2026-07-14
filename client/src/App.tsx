@@ -14,6 +14,8 @@ import AskPage from './pages/AskPage';
 
 import DocumentDetailPage from './pages/DocumentDetailPage';
 
+import SettingsPage from './pages/SettingsPage';
+
 import { useEffect } from 'react';
 
 import { refreshAccessToken, getCurrentUser } from './api/authApi';
@@ -136,6 +138,15 @@ export default function App() {
         element={
           <ProtectedRoute>
             <DocumentDetailPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path='/dashboard/settings'
+        element={
+          <ProtectedRoute>
+            <SettingsPage />
           </ProtectedRoute>
         }
       />
