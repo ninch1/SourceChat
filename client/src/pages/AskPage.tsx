@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
+  ArrowUpRight,
   FileText,
   Loader2,
   MessageSquareText,
@@ -11,10 +12,11 @@ import DashboardHeader from '../components/dashboard/DashboardHeader';
 import DashboardSidebar from '../components/dashboard/DashboardSidebar';
 import { useAskQuestion } from '../queries/ask';
 import { useGetDocuments } from '../queries/document';
-import type { AskQuestionResponse } from '../types/ask';
+import type { AskQuestionResponse, AskSource } from '../types/ask';
 
 const QUESTION_MIN_LENGTH = 3;
 const QUESTION_MAX_LENGTH = 500;
+const SOURCE_PREVIEW_LENGTH = 220;
 
 export default function AskPage() {
   const [question, setQuestion] = useState('');
@@ -207,39 +209,31 @@ export default function AskPage() {
                         </p>
                       </section>
 
-                      {result.sources.length > 0 && (
-                        <section className='rounded-3xl border border-app-border bg-app-surface/70 p-6 shadow-sm sm:p-8'>
-                          <h2 className='text-base font-semibold text-app-text'>
-                            Sources
-                          </h2>
-                          <p className='mt-1 text-sm text-app-muted'>
-                            Passages used to ground this answer.
-                          </p>
+                      <section className='rounded-3xl border border-app-border bg-app-surface/70 p-6 shadow-sm sm:p-8'>
+                        <h2 className='text-base font-semibold text-app-text'>
+                          Sources
+                        </h2>
+                        <p className='mt-1 text-sm text-app-muted'>
+                          Passages used to ground this answer.
+                        </p>
 
+                        {result.sources.length > 0 ? (
                           <div className='mt-5 space-y-3'>
                             {result.sources.map((source) => (
-                              <article
+                              <AskSourceCard
                                 key={source.chunkId}
-                                className='rounded-2xl border border-app-border bg-app-bg/40 p-4'
-                              >
-                                <div className='mb-2 flex flex-wrap items-center justify-between gap-2'>
-                                  <p className='text-sm font-medium text-app-text'>
-                                    {source.documentTitle}
-                                  </p>
-                                  <span className='rounded-full bg-app-card px-2.5 py-1 text-xs font-medium text-app-muted'>
-                                    Relevance{' '}
-                                    {Math.round(source.relevanceScore * 100)}%
-                                  </span>
-                                </div>
-
-                                <p className='text-sm leading-6 text-app-muted'>
-                                  {source.text}
-                                </p>
-                              </article>
+                                source={source}
+                              />
                             ))}
                           </div>
-                        </section>
-                      )}
+                        ) : (
+                          <div className='mt-5 rounded-2xl border border-dashed border-app-border bg-app-bg/40 px-5 py-8 text-center'>
+                            <p className='text-sm text-app-muted'>
+                              No source snippets were returned for this answer.
+                            </p>
+                          </div>
+                        )}
+                      </section>
                     </div>
                   )}
                 </div>
@@ -249,5 +243,63 @@ export default function AskPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function AskSourceCard({ source }: { source: AskSource }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const isLong = source.text.length > SOURCE_PREVIEW_LENGTH;
+  const displayText =
+    isLong && !isExpanded
+      ? `${source.text.slice(0, SOURCE_PREVIEW_LENGTH).trimEnd()}...`
+      : source.text;
+
+  const matchPercent = Math.round(source.relevanceScore * 100);
+  const showMatch =
+    Number.isFinite(matchPercent) && matchPercent >= 0 && matchPercent <= 100;
+
+  return (
+    <article className='rounded-2xl border border-app-border bg-app-bg/40 p-4 transition hover:border-emerald-500/30 hover:bg-app-bg/60'>
+      <div className='mb-3 flex flex-wrap items-start justify-between gap-2'>
+        <Link
+          to={`/dashboard/documents/${source.documentId}`}
+          className='group/link inline-flex min-w-0 max-w-full items-center gap-1.5 text-sm font-medium text-app-text transition hover:text-emerald-400'
+        >
+          <span className='truncate'>{source.documentTitle}</span>
+          <ArrowUpRight className='h-3.5 w-3.5 shrink-0 opacity-60 transition group-hover/link:opacity-100' />
+        </Link>
+
+        {showMatch && (
+          <span className='rounded-full bg-app-card px-2.5 py-1 text-xs font-medium text-app-muted'>
+            {matchPercent}% match
+          </span>
+        )}
+      </div>
+
+      <p className='text-sm leading-6 text-app-muted whitespace-pre-wrap'>
+        {displayText}
+      </p>
+
+      <div className='mt-3 flex flex-wrap items-center justify-between gap-3'>
+        {isLong ? (
+          <button
+            type='button'
+            onClick={() => setIsExpanded((current) => !current)}
+            className='cursor-pointer text-xs font-medium text-emerald-400 transition hover:text-emerald-300'
+          >
+            {isExpanded ? 'Show less' : 'Show more'}
+          </button>
+        ) : (
+          <span />
+        )}
+
+        <Link
+          to={`/dashboard/documents/${source.documentId}`}
+          className='cursor-pointer text-xs font-medium text-app-muted transition hover:text-app-text'
+        >
+          View document
+        </Link>
+      </div>
+    </article>
   );
 }
