@@ -26,7 +26,8 @@ router.post(
   uploadDocumentFile,
 );
 router.get('/', authMiddleware, getDocuments);
-router.delete('/all', authMiddleware, deleteAllDocuments);
+// DELETE / must be registered before DELETE /:id so "/documents" is not treated as an id.
+router.delete('/', authMiddleware, deleteAllDocuments);
 router.get('/:id', authMiddleware, getDocumentById);
 router.patch('/:id', authMiddleware, updateDocumentById);
 router.delete('/:id', authMiddleware, deleteDocumentById);

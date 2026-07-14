@@ -24,3 +24,7 @@ export interface CreateTextDocumentData {
 export interface CreateDocumentResponse {
   document: DocumentSummary;
 }
+
+export interface DeleteAllDocumentsResponse {
+  deletedCount: number;
+}

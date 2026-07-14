@@ -305,7 +305,7 @@ DELETE /api/documents/:id
 Delete all documents for the authenticated user:
 
 ```http
-DELETE /api/documents/all
+DELETE /api/documents
 
 ```
 

@@ -1,11 +1,37 @@
 import DashboardHeader from '../components/dashboard/DashboardHeader';
 import DashboardSidebar from '../components/dashboard/DashboardSidebar';
 import EmptyDocumentsState from '../components/dashboard/EmptyDocumentsState';
-import { useGetDocuments } from '../queries/document';
+import {
+  useDeleteAllDocuments,
+  useGetDocuments,
+} from '../queries/document';
 import DocumentsList from '../components/dashboard/DocumentsList';
 
 export default function DashboardPage() {
   const { data: documentsData, isLoading, isError, error } = useGetDocuments();
+  const {
+    mutate: deleteAllDocuments,
+    isPending: isDeletingAll,
+    isError: isDeleteAllError,
+    error: deleteAllError,
+    reset: resetDeleteAll,
+  } = useDeleteAllDocuments();
+
+  const documents = documentsData?.documents ?? [];
+  const hasDocuments = documents.length > 0;
+
+  const handleDeleteAll = () => {
+    const confirmed = window.confirm(
+      'Delete all documents? This will permanently remove every document in your workspace and cannot be undone.',
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    resetDeleteAll();
+    deleteAllDocuments();
+  };
 
   return (
     <div className='min-h-screen bg-app-bg text-app-text'>
@@ -32,14 +58,24 @@ export default function DashboardPage() {
                 </p>
               </div>
 
+              {isDeleteAllError && (
+                <div className='mb-4 rounded-xl bg-red-400/10 p-4 text-sm text-red-400'>
+                  {deleteAllError.message}
+                </div>
+              )}
+
               {isLoading ? (
                 <div>Loading...</div>
               ) : isError ? (
                 <div>Error: {error.message}</div>
-              ) : documentsData?.documents.length === 0 ? (
+              ) : !hasDocuments ? (
                 <EmptyDocumentsState />
               ) : (
-                <DocumentsList documents={documentsData?.documents ?? []} />
+                <DocumentsList
+                  documents={documents}
+                  onDeleteAll={handleDeleteAll}
+                  isDeletingAll={isDeletingAll}
+                />
               )}
             </div>
           </main>

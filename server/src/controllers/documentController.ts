@@ -204,21 +204,22 @@ export const deleteDocumentById = asyncWrapper(async (req, res) => {
     throw new ErrorResponse('Document not found', 404);
   }
 
+  // Related chunks (and their embeddings) are removed via Prisma onDelete: Cascade.
   await prisma.document.delete({
     where: { id: document.id },
   });
 
-  const safeDocumentData = safeDocument(document);
   res.status(200).json({
     success: true,
     message: 'Document deleted successfully',
-    data: { document: safeDocumentData },
   });
 });
 
+// DELETE /api/documents - Delete all documents for the current user
 export const deleteAllDocuments = asyncWrapper(async (req, res) => {
   const user = getAuthUser(req);
 
+  // Related chunks (and their embeddings) are removed via Prisma onDelete: Cascade.
   const result = await prisma.document.deleteMany({
     where: {
       userId: user.id,

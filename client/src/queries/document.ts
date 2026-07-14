@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   createDocumentFromText,
+  deleteAllDocuments,
+  deleteDocument,
   getDocuments,
   uploadDocument,
 } from '../api/documentsApi';
@@ -41,6 +43,30 @@ export const useUploadDocument = () => {
   return useMutation({
     mutationFn: ({ file, title }: { file: File; title?: string }) =>
       uploadDocument(authFetch, file, title),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['documents'] });
+    },
+  });
+};
+
+export const useDeleteDocument = () => {
+  const authFetch = useAuthFetch();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (documentId: number) => deleteDocument(authFetch, documentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['documents'] });
+    },
+  });
+};
+
+export const useDeleteAllDocuments = () => {
+  const authFetch = useAuthFetch();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => deleteAllDocuments(authFetch),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documents'] });
     },

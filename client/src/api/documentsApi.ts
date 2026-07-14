@@ -1,10 +1,27 @@
 import type {
   CreateDocumentResponse,
   CreateTextDocumentData,
+  DeleteAllDocumentsResponse,
   GetDocumentsResponse,
 } from '../types/document';
 
 type AuthFetch = (path: string, options?: RequestInit) => Promise<Response>;
+
+const getErrorMessage = async (response: Response) => {
+  let message = 'Something went wrong. Please try again later.';
+
+  try {
+    const error = await response.json();
+
+    if (error?.message) {
+      message = error.message;
+    }
+  } catch {
+    // Keep generic message
+  }
+
+  return message;
+};
 
 export const getDocuments = async (
   authFetch: AuthFetch,
@@ -12,19 +29,7 @@ export const getDocuments = async (
   const response = await authFetch('/documents');
 
   if (!response.ok) {
-    let message = 'Something went wrong. Please try again later.';
-
-    try {
-      const error = await response.json();
-
-      if (error?.message) {
-        message = error.message;
-      }
-    } catch {
-      // Keep generic message
-    }
-
-    throw new Error(message);
+    throw new Error(await getErrorMessage(response));
   }
 
   const data = await response.json();
@@ -45,19 +50,7 @@ export const createDocumentFromText = async (
   });
 
   if (!response.ok) {
-    let message = 'Something went wrong. Please try again later.';
-
-    try {
-      const error = await response.json();
-
-      if (error?.message) {
-        message = error.message;
-      }
-    } catch {
-      // Keep generic message
-    }
-
-    throw new Error(message);
+    throw new Error(await getErrorMessage(response));
   }
 
   const data = await response.json();
@@ -84,19 +77,36 @@ export const uploadDocument = async (
   });
 
   if (!response.ok) {
-    let message = 'Something went wrong. Please try again later.';
+    throw new Error(await getErrorMessage(response));
+  }
 
-    try {
-      const error = await response.json();
+  const data = await response.json();
 
-      if (error?.message) {
-        message = error.message;
-      }
-    } catch {
-      // Keep generic message
-    }
+  return data.data;
+};
 
-    throw new Error(message);
+export const deleteDocument = async (
+  authFetch: AuthFetch,
+  documentId: number,
+): Promise<void> => {
+  const response = await authFetch(`/documents/${documentId}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error(await getErrorMessage(response));
+  }
+};
+
+export const deleteAllDocuments = async (
+  authFetch: AuthFetch,
+): Promise<DeleteAllDocumentsResponse> => {
+  const response = await authFetch('/documents', {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error(await getErrorMessage(response));
   }
 
   const data = await response.json();
