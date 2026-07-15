@@ -11,15 +11,37 @@ const AskRagSchema = z.object({
     .max(500, 'Question must be less than 500 characters'),
 });
 
-export const askRagQuestion = asyncWrapper(async (req, res) => {
-  const user = getAuthUser(req);
-  const { question } = AskRagSchema.parse(req.body);
+export const askRagQuestion = asyncWrapper(async (req, res, next) => {
+  // TEMP diagnostic logs for production /api/ask 502 debugging — remove later
+  console.log('[ASK] route hit');
 
-  const { answer, sources } = await askRag(question, user.id);
+  try {
+    const user = getAuthUser(req);
+    const { question } = AskRagSchema.parse(req.body);
 
-  res.status(200).json({
-    success: true,
-    message: 'Question answered successfully',
-    data: { question, answer, sources },
-  });
+    console.log('[ASK] request context:', {
+      userId: user.id,
+      questionLength: question.length,
+      timestamp: new Date().toISOString(),
+    });
+
+    console.log('[ASK] validation/auth passed, starting RAG');
+    const { answer, sources } = await askRag(question, user.id);
+
+    console.log('[ASK] sending response', {
+      answerLength: answer.length,
+      sourcesCount: sources.length,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Question answered successfully',
+      data: { question, answer, sources },
+    });
+
+    console.log('[ASK] response sent');
+  } catch (error) {
+    console.error('[ASK] failed:', error);
+    next(error);
+  }
 });

@@ -100,6 +100,12 @@ const generateEmbedding = async (
   text: string,
   task: JinaEmbeddingTask,
 ): Promise<number[]> => {
+  // TEMP diagnostic logs for production /api/ask 502 debugging — remove later
+  console.log('[JINA] embedding request started', {
+    task,
+    textLength: text.length,
+  });
+
   try {
     const response = await fetch(JINA_API_URL, {
       method: 'POST',
@@ -120,7 +126,7 @@ const generateEmbedding = async (
       const errorText = await response.text();
       const errorBody = parseJinaErrorBody(errorText);
 
-      console.error('Jina embedding error:', {
+      console.error('[JINA] embedding request failed:', {
         status: response.status,
         code: errorBody.code,
         detail: errorBody.detail,
@@ -137,7 +143,7 @@ const generateEmbedding = async (
 
     if (!result.success) {
       console.error(
-        'Jina embedding response did not match expected shape:',
+        '[JINA] embedding request failed: invalid response shape',
         data,
       );
       console.error('Error details:', result.error.issues);
@@ -151,11 +157,16 @@ const generateEmbedding = async (
     const embedding = result.data.data[0]?.embedding;
 
     if (!embedding) {
+      console.error('[JINA] embedding request failed: missing embedding');
       throw new ErrorResponse(
         'Embedding service returned an invalid response.',
         502,
       );
     }
+
+    console.log('[JINA] embedding request completed', {
+      dimensions: embedding.length,
+    });
 
     return embedding;
   } catch (error) {
@@ -163,7 +174,7 @@ const generateEmbedding = async (
       throw error;
     }
 
-    console.error('Unexpected Jina embedding error:', error);
+    console.error('[JINA] embedding request failed:', error);
 
     throw new ErrorResponse(
       'Embedding service failed. Please try again later.',

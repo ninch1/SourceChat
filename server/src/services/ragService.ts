@@ -16,8 +16,13 @@ const formatSources = (sources: RetrievedChunk[]) => {
 };
 
 export const askRag = async (question: string, userId: string) => {
+  // TEMP diagnostic logs for production /api/ask 502 debugging — remove later
+
   // check if there are any uploaded chunks
+  console.log('[ASK] checking for uploaded chunks');
   const hasUploadedChunks = await hasChunks(userId);
+  console.log('[ASK] has uploaded chunks:', hasUploadedChunks);
+
   if (!hasUploadedChunks) {
     return {
       answer: 'No documents have been uploaded yet.',
@@ -36,12 +41,18 @@ export const askRag = async (question: string, userId: string) => {
   }
 
   // generate the answer
+  console.log('[ASK] calling Gemini');
   const generatedAnswer = await generateAnswer(question, retrievedChunks);
+  console.log('[ASK] Gemini response generated');
+
+  const sources = generatedAnswer.answeredFromSources
+    ? formatSources(retrievedChunks)
+    : [];
+
+  console.log('[ASK] sources prepared:', sources.length);
 
   return {
     answer: generatedAnswer.answer,
-    sources: generatedAnswer.answeredFromSources
-      ? formatSources(retrievedChunks)
-      : [],
+    sources,
   };
 };

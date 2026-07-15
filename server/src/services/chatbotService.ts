@@ -95,6 +95,12 @@ ${source.text}`,
   .join('\n')}
 `;
 
+  // TEMP diagnostic logs for production /api/ask 502 debugging — remove later
+  console.log('[GEMINI] answer request started', {
+    questionLength: question.length,
+    sourcesCount: sources.length,
+  });
+
   try {
     const response = await ai.models.generateContent({
       model,
@@ -102,16 +108,24 @@ ${source.text}`,
     });
 
     if (!response.text) {
+      console.error('[GEMINI] answer request failed: empty response');
       throw new ErrorResponse('AI service returned an empty response.', 502);
     }
 
-    return parseGeminiAnswer(response.text);
+    const parsed = parseGeminiAnswer(response.text);
+    console.log('[GEMINI] answer request completed', {
+      answeredFromSources: parsed.answeredFromSources,
+      answerLength: parsed.answer.length,
+    });
+
+    return parsed;
   } catch (error) {
     if (error instanceof ErrorResponse) {
+      console.error('[GEMINI] answer request failed:', error);
       throw error;
     }
 
-    console.error('Unexpected Gemini API error:', error);
+    console.error('[GEMINI] answer request failed:', error);
 
     throw new ErrorResponse('AI service failed. Please try again later.', 502);
   }

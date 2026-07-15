@@ -6,6 +6,25 @@ The app splits documents into chunks, generates embeddings with Jina, stores vec
 
 SourceChat also includes user authentication, user-owned documents, refresh-token session handling, protected routes, rate limiting, and API security hardening.
 
+## Live Demo
+
+- Frontend: https://source-chat-eta.vercel.app/
+- Backend API: https://sourcechat-api.onrender.com
+
+## Screenshots
+
+### Welcome Page
+
+![Welcome page](./screenshots/welcome-page.png)
+
+### Documents Dashboard
+
+![Documents dashboard](./screenshots/documents-dashboard.png)
+
+### Ask Page with Source Citations
+
+![Ask page with source citations](./screenshots/ask-page.png)
+
 ## Features
 
 ### Authentication

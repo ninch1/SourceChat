@@ -26,11 +26,18 @@ export const retrieveChunks = async (
   userId: string,
   limit: number = 3,
 ): Promise<RetrievedChunk[]> => {
+  // TEMP diagnostic logs for production /api/ask 502 debugging — remove later
+
   // generate the embedding for the question
+  console.log('[ASK] generating question embedding');
   const questionEmbedding = await generateEmbeddingQuery(question);
+  console.log('[ASK] question embedding generated', {
+    dimensions: questionEmbedding.length,
+  });
   const questionVector = vectorToSql(questionEmbedding);
 
   try {
+    console.log('[ASK] searching relevant chunks');
     const results = await prisma.$queryRaw<RetrievedChunk[]>`
   SELECT
     "Chunk"."id" AS "chunkId",
@@ -47,9 +54,14 @@ export const retrieveChunks = async (
 `;
 
     // filter out chunks that are too far away
-    return results.filter((chunk) => chunk.distance <= MAX_DISTANCE);
+    const relevantChunks = results.filter(
+      (chunk) => chunk.distance <= MAX_DISTANCE,
+    );
+    console.log('[ASK] relevant chunks found:', relevantChunks.length);
+
+    return relevantChunks;
   } catch (error) {
-    console.error('Vector retrieval failed:', error);
+    console.error('[ASK] searching relevant chunks failed:', error);
     throw new ErrorResponse('Failed to retrieve relevant chunks', 500);
   }
 };
